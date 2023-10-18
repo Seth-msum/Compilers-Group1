@@ -8,7 +8,8 @@ import java.io.* ;
 public class Parser extends ASTVisitor {
 
     public CompilationUnit cu = null ;
-    public Lexer lexer        = null ;       
+    public Lexer lexer        = null ;  
+    public static Token look = null ;     
 
     public Parser (Lexer lexer) { 
 

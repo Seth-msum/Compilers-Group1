@@ -20,4 +20,6 @@ public class CompilationUnit extends Node {
 
         v.visit(this);
     }
+
+    // missing visit function
 }

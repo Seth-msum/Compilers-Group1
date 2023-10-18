@@ -2,5 +2,9 @@
 
 ## This is a git test
 
-- Parser move() needs fixing
+- Parser has a look variable that needs to be fixed
+
 - Parser has different visit methods.
+
+- missig visit fucntion in the compilationUnit
+
