@@ -15,12 +15,18 @@ public class Parser extends ASTVisitor {
 
         this.lexer = lexer ;
         cu = new CompilationUnit() ;
+
+        move();
+
         visit(cu) ;
     }
     
     public Parser () {
 
         cu = new CompilationUnit() ;
+
+        move();
+
         visit(cu) ;
     }
 
@@ -56,10 +62,12 @@ public class Parser extends ASTVisitor {
     }
 
     ////////////////////////////////////////
-    
     public void visit (CompilationUnit n) {
-        n.assign = new AssignmentNode() ;
-        n.assign.accept(this) ;
+
+        System.out.println("CompilationUnit");
+
+        n.block = new BlockStatmentNode();
+        n.block.accept(this) ;
     }
 
     // public void visit (AssignmentNode n) {
@@ -84,4 +92,33 @@ public class Parser extends ASTVisitor {
     //     // One part of the next assignment.
     // }
 
+    public void visit (BlockStatmentNode n) {
+        
+        System.out.println("BlockStatmentNode");
+        
+        if (look.tag == "{")
+            System.out.println("Matched with '{': " + look.tag);
+        match("{");
+
+        n.identifier = new IdentifierNode();
+        n.identifier.accept(this) ;
+
+        if (look.tag == ";")
+            System.out.println("Matched with ';': " + look.tag);
+        match(";");
+
+        if (look.tag == "}")
+            System.out.println("Matched with '}': " + look.tag);
+        match("}");
+    }
+
+    public void visit (IdentifierNode n) {
+
+        n.id = look.toString();
+
+        match(tag.ID);
+
+        System.out.println("IdentifierNode: " + n.id);
+
+    }
 }
