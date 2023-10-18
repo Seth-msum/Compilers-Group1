@@ -4,7 +4,7 @@ import assign4.visitor.* ;
 
 public class BlockStatmentNode extends Node {
     
-    public IdentifierNode identifier ;
+    public AssignmentNode assign ;
     public BlockStatmentNode () {
 
     }
