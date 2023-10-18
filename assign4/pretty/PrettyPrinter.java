@@ -64,4 +64,33 @@ public class PrettyPrinter extends ASTVisitor {
 
         print(s);
     }
+
+    public void visit(BlockStatementNode n){
+
+        println("{");
+        indentUp();
+        n.identifier.accept(this);
+        indentDown();
+
+        println("}");
+    }
+
+    public void visit(AssignmentNode n){
+
+        printIndent();
+        n.id.accept(this);
+        print(" = ");
+
+        printIndent();
+        n.right.accept(this);
+        print(";");
+    }
+
+    public void visit(IdentifierNode n){
+
+        //printIndent();
+        print(n.id);
+        //println(";");
+    }
+
 }
