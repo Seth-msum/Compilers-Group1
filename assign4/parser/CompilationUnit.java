@@ -13,9 +13,9 @@ public class CompilationUnit extends Node {
 
     }
 
-    public CompilationUnit (AssignmentNode assign) {
+    public CompilationUnit (BlockStatmentNode block) {
 
-        this.assign = assign ;
+        this.block = block ;
     }
 
     public void accept(ASTVisitor v) {
