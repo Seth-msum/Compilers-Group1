@@ -23,7 +23,7 @@ public class ASTVisitor {
 
     public void visit (BlockStatmentNode n) {
         
-        n.identifier.accept(this) ;
+        n.assign.accept(this) ;
     }
 
     public void visit (IdentifierNode n) {
