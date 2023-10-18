@@ -70,13 +70,19 @@ public class Parser extends ASTVisitor {
         n.block.accept(this) ;
     }
 
-    // public void visit (AssignmentNode n) {
-    //     n.left = new LiteralNode() ;
-    //     n.left.accept(this) ;
-        
-    //     n.right = new AdditionNode() ;
-    //     n.right.accept(this) ;
-    // }
+     public void visit (AssignmentNode n) {
+
+	n.id = new IdentifierNode();
+        n.id.accept(this);
+
+	match("=");
+
+	n.right = new IdentifierNode();
+	n.right.accept(this);
+	     
+        match(";");
+
+    }
 
     // public void visit (AdditionNode n) {
     //     n.left = new LiteralNode() ;
@@ -100,12 +106,8 @@ public class Parser extends ASTVisitor {
             System.out.println("Matched with '{': " + look.tag);
         match("{");
 
-        n.identifier = new IdentifierNode();
-        n.identifier.accept(this) ;
-
-        if (look.tag == ";")
-            System.out.println("Matched with ';': " + look.tag);
-        match(";");
+        n.assign = new AssignmentNode();
+        n.assign.accept(this) ;
 
         if (look.tag == "}")
             System.out.println("Matched with '}': " + look.tag);
