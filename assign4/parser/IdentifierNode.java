@@ -19,6 +19,7 @@ public class IdentifierNode extends Node {
     }
 
     public void accept(ASTVisitor v) {
+        //Told to do work, do it in the visitor (parser most likely)
         v.visit(this) ;
     }
 

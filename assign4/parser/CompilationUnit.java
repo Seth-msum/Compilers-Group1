@@ -1,6 +1,7 @@
 package assign4.parser ;
 
-import assign4.parser.BlockStatmentNode;
+import assign4.parser.*;
+import assign4.pretty.PrettyPrinter;
 import assign4.visitor.* ;
 
 public class CompilationUnit extends Node {
@@ -13,9 +14,9 @@ public class CompilationUnit extends Node {
 
     }
 
-    public CompilationUnit (AssignmentNode assign) {
+    public CompilationUnit (BlockStatmentNode block) {
 
-        this.assign = assign ;
+        this.block = block;
     }
 
     public void accept(ASTVisitor v) {
@@ -27,4 +28,9 @@ public class CompilationUnit extends Node {
     public void visit(AssignmentNode an) {
 
     }
+
+    public void visit(PrettyPrinter p){
+        
+    }
+
 }

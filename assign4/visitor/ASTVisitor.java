@@ -6,24 +6,24 @@ public class ASTVisitor {
 
     public void visit (CompilationUnit n) {
 
-        n.assign.accept(this) ;
+        n.block.accept(this) ;
     }
 
     public void visit (AssignmentNode n) {
 
-        n.left.accept(this) ;
+        n.id.accept(this) ;
         n.right.accept(this) ;
     }
 
-    public void visit (AdditionNode n) {
+    // public void visit (AdditionNode n) {
 
-        n.left.accept(this) ;
-        n.right.accept(this) ;
-    }
+    //     n.left.accept(this) ;
+    //     n.right.accept(this) ;
+    // }
 
     public void visit (BlockStatmentNode n) {
         
-        n.identifier.accept(this) ;
+        n.assign.accept(this) ;
     }
 
     public void visit (IdentifierNode n) {

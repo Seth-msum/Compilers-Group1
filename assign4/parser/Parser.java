@@ -15,12 +15,19 @@ public class Parser extends ASTVisitor {
 
         this.lexer = lexer ;
         cu = new CompilationUnit() ;
+
+        move() ; // load a token into look
+
+
         visit(cu) ;
     }
     
     public Parser () {
 
         cu = new CompilationUnit() ;
+
+        move() ;// to load a token into look
+
         visit(cu) ;
     }
 
@@ -44,6 +51,7 @@ public class Parser extends ASTVisitor {
     }
 
     void match (int t) {
+        //first compares, then it calls move. 
         try {
             if (look.tag == t)
             move() ;
@@ -57,10 +65,10 @@ public class Parser extends ASTVisitor {
 
     ////////////////////////////////////////
     
-    public void visit (CompilationUnit n) {
-        n.assign = new AssignmentNode() ;
-        n.assign.accept(this) ;
-    }
+    // public void visit (CompilationUnit n) {
+    //     n.assign = new AssignmentNode() ;
+    //     n.assign.accept(this) ;
+    // }
 
     // public void visit (AssignmentNode n) {
     //     n.left = new LiteralNode() ;
@@ -83,5 +91,69 @@ public class Parser extends ASTVisitor {
     //     // What should visit(LiteralNode) do? 
     //     // One part of the next assignment.
     // }
+    public void visit (CompilationUnit n) {
+        System.out.println("ComilationUnit");
 
+        // It goes straight to assuming its a block statemtnt.
+        n.block = new BlockStatmentNode() ;
+        n.block.accept(this) ;
+    }
+
+
+
+    // public void visit (AdditionNode n) {
+        
+    //     n.left.accept(this) ;
+    //     n.right.accept(this) ;
+    // }
+
+    public void visit (BlockStatmentNode n) {
+        // {stmt} <- this is a BlockStatementNode
+        System.out.println("BlockStatentNode") ;
+        // starting point for block statement
+
+        if (look.tag == '{')
+            System.out.println("Matched with '{' :" + look.tag) ;
+        match('{') ;
+        
+        // This used to only assume that the block statement stores an identificaiton
+        //  now it assumes that an assignment is stored.
+        //n.assign = new IdentifierNode(); 
+        n.assign = new AssignmentNode() ;
+        n.assign.accept(this) ; //Do work on this identifier node.
+
+
+        // if (look.tag == ';')
+        //     System.out.println("Matched with ';' :" + look.tag) ;
+        // match(';') ;
+
+        if (look.tag == '}')
+            System.out.println("Matched with '}' :" + look.tag) ;
+        match('}') ;
+    }
+
+    public void visit (AssignmentNode n) {
+        
+        n.id = new IdentifierNode() ;
+        n.id.accept(this) ;
+        
+        match('=') ;
+
+        n.right = new IdentifierNode() ;
+        n.right.accept(this) ;
+                
+    
+        // if (look.tag == ';')
+        //     System.out.println("Matched with ';' :" + look.tag) ;
+        match(';') ;
+    }
+
+    public void visit (IdentifierNode n) {
+
+        n.id = look.toString() ;
+
+        match(Tag.ID) ;
+
+        System.out.println("IdentifierNode: " + n.id);
+    }
 }

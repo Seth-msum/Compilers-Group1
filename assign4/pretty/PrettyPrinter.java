@@ -12,7 +12,7 @@ public class PrettyPrinter extends ASTVisitor {
 
     public Parser parser = null;
 
-    public PrettyPrinter(){
+    public PrettyPrinter(Parser parser){
 
         this.parser = parser;
         visit(this.parser.cu);
@@ -21,6 +21,42 @@ public class PrettyPrinter extends ASTVisitor {
     public PrettyPrinter(){
 
         visit(this.parser.cu);
+    }
+
+    public void visit(CompilationUnit c) {
+
+        c.block.accept(this);
+    }
+
+    public void visit(BlockStatmentNode n) {
+        println("{") ;
+
+        indentUp() ;
+
+        n.assign.accept(this);
+
+        indentDown() ;
+
+        println("}") ;
+    }
+
+    public void visit (AssignmentNode n) { //This was copied directly from ASTV...
+        // Then modifies
+        printIndent() ;
+        n.id.accept(this) ;
+
+        print(" = ") ;
+
+        n.right.accept(this) ;
+
+        println(" ;") ;
+    }
+
+    public void visit(IdentifierNode n) {
+        
+        // printIndent() ;
+        print(n.id) ;
+        // println(" ;") ;
     }
 
     ////////////////////////////////////////
@@ -59,7 +95,7 @@ public class PrettyPrinter extends ASTVisitor {
         String s = "";
         for (int i=0; i<indent; i++){
 
-            s += " ";
+            s += "  ";
         }
 
         print(s);

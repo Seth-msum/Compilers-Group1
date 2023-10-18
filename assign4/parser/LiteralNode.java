@@ -1,27 +1,30 @@
-package assign4.parser ;
+// package assign4.parser ;
 
-import assign4.visitor.* ;
+// import assign4.visitor.* ;
 
-public class LiteralNode extends Node {
+// public class LiteralNode extends Node {
 
-    public String literal ;
+//     public String literal ;
 
-    public LiteralNode () {
+//     public LiteralNode () {
 
-    }
+//     }
     
-    public LiteralNode (String literal) {
+//     public LiteralNode (String literal) {
 
-        this.literal = literal ;
-    }
+//         this.literal = literal ;
+//     }
 
-    public void accept(ASTVisitor v) {
+//     public void accept(ASTVisitor v) {
 
-        v.visit(this);
-    }
+//         v.visit(this);
+//     }
 
-    void printNode () {
+//     void printNode () {
 
-        System.out.println("LiteralNode: " + literal) ;
-    }
-}
+//         System.out.println("LiteralNode: " + literal) ;
+//     }
+// }
+//
+
+//Deprecated 

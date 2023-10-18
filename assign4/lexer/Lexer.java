@@ -50,7 +50,7 @@ public class Lexer {
 
             } while (Character.isDigit(peek)) ;
 
-            System.out.println("v: " + v) ;
+            // System.out.println("v: " + v) ;
 
             return new Num(v) ;
         }
@@ -77,13 +77,13 @@ public class Lexer {
             w = new Word(s, Tag.ID) ;
             words.put(s, w) ;
 
-            System.out.println("w: " + w.toString()) ;
+            // System.out.println("w: " + w.toString()) ;
 
             return w ;
         }
 
         Token t = new Token(peek) ; 
-        System.out.println("t: " + t.toString()) ;
+        // System.out.println("t: " + t.toString()) ;
         peek = ' ' ;
 
         return t ;

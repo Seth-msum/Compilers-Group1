@@ -4,15 +4,15 @@ import assign4.visitor.* ;
 
 public class AssignmentNode extends Node {
 
-    public LiteralNode  left  ;
-    public AdditionNode right ;
+    public IdentifierNode  id  ;
+    public IdentifierNode right ;
 
     public AssignmentNode () {
         
     }
-    public AssignmentNode (LiteralNode left, AdditionNode right) {
+    public AssignmentNode (IdentifierNode id, IdentifierNode right) {
 
-        this.left  = left  ;
+        this.id  = id  ;
         this.right = right ;
     }
 
