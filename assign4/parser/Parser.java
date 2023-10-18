@@ -62,26 +62,26 @@ public class Parser extends ASTVisitor {
         n.assign.accept(this) ;
     }
 
-    public void visit (AssignmentNode n) {
-        n.left = new LiteralNode() ;
-        n.left.accept(this) ;
+    // public void visit (AssignmentNode n) {
+    //     n.left = new LiteralNode() ;
+    //     n.left.accept(this) ;
         
-        n.right = new AdditionNode() ;
-        n.right.accept(this) ;
-    }
+    //     n.right = new AdditionNode() ;
+    //     n.right.accept(this) ;
+    // }
 
-    public void visit (AdditionNode n) {
-        n.left = new LiteralNode() ;
-        n.left.accept(this) ;
+    // public void visit (AdditionNode n) {
+    //     n.left = new LiteralNode() ;
+    //     n.left.accept(this) ;
         
-        n.right = new LiteralNode() ;
-        n.right.accept(this) ;
-    }
+    //     n.right = new LiteralNode() ;
+    //     n.right.accept(this) ;
+    // }
 
-    public void visit (LiteralNode n) {
+    // public void visit (LiteralNode n) {
 
-        // What should visit(LiteralNode) do? 
-        // One part of the next assignment.
-    }
+    //     // What should visit(LiteralNode) do? 
+    //     // One part of the next assignment.
+    // }
 
 }

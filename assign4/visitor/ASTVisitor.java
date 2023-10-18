@@ -21,7 +21,12 @@ public class ASTVisitor {
         n.right.accept(this) ;
     }
 
-    public void visit (LiteralNode n) {
+    public void visit (BlockStatmentNode n) {
+        
+        n.identifier.accept(this) ;
+    }
+
+    public void visit (IdentifierNode n) {
 
     }
 }

@@ -1,12 +1,14 @@
 package assign4.parser ;
 
+import assign4.parser.BlockStatmentNode;
 import assign4.visitor.* ;
 
 public class CompilationUnit extends Node {
 
     //Node ast ;
-    public AssignmentNode assign ;
-
+    //public AssignmentNode assign ;
+    public BlockStatmentNode block ;
+    
     public CompilationUnit () {
 
     }
@@ -22,4 +24,7 @@ public class CompilationUnit extends Node {
     }
 
     // missing visit function
+    public void visit(AssignmentNode an) {
+
+    }
 }

@@ -9,7 +9,7 @@ public class Main {
 
         Lexer lexer = new Lexer() ;
         Parser parser = new Parser(lexer) ;
-        // PrettyPrinter pretty = new PrettyPrinter(parser) ;
+        PrettyPrinter pretty = new PrettyPrinter(parser) ;
 	
     }
 }
