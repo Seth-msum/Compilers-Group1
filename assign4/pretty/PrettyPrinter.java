@@ -28,20 +28,26 @@ public class PrettyPrinter extends ASTVisitor {
         c.block.accept(this);
     }
 
+
+    // Jayce code: Please Check
     public void visit(BlockStatmentNode n) {
-        // int count = 0;
-        println("{") ;
-
-        indentUp() ;
-
-        //Old: n.assign.accept(this);
-        for (int i = 0; i < n.size; i++)
-            n.acceptAssignmentNode(i, this) ;
-
-        indentDown() ;
-
-        println("}") ;
+        if (n.isWhileBlock) {
+            println("while (condition) {");
+        } else {
+            println("{");
+        }
+    
+        indentUp();
+    
+        for (int i = 0; i < n.size; i++) {
+            n.acceptAssignmentNode(i, this);
+        }
+    
+        indentDown();
+        println("}");
     }
+    // ^^^
+
 
     public void visit (AssignmentNode n) { //This was copied directly from ASTV...
         // Then modifies
