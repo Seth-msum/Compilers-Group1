@@ -1,4 +1,5 @@
 {
     sum = a + b ;
+    test = a + c ;
 }
 

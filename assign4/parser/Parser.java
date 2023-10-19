@@ -3,6 +3,7 @@ package assign4.parser ;
 import assign4.visitor.* ;
 import assign4.lexer.* ;
 
+
 import java.io.* ;
 
 public class Parser extends ASTVisitor {
@@ -33,14 +34,24 @@ public class Parser extends ASTVisitor {
     }
 
     public void visit (BlockStatmentNode n) {
+        int count = 0;
         System.out.println("BlockStatentNode") ;
-        if (look.tag == '{')
-            System.out.println("Matched with '{' :" + look.tag) ;
+
         match('{') ;
-        n.assign = new AssignmentNode() ;
-        n.assign.accept(this) ;
-        if (look.tag == '}')
-            System.out.println("Matched with '}' :" + look.tag) ;
+
+        //Old: n.assign = new AssignmentNode() ;
+        n.addAssignmentNode(); //replaces n.assign = new AssignmentNode() ;
+        //Old:n.assign.accept(this) ;
+        n.acceptAssignmentNode(count, this) ; //replaces n.assign.accept(this) ;
+
+        //
+        if(look.tag != '}') {
+            count += 1 ;
+            n.addAssignmentNode();
+            n.acceptAssignmentNode(count, this) ;
+        }
+        //
+        
         match('}') ;
     }
     
@@ -92,10 +103,13 @@ public class Parser extends ASTVisitor {
         try {
             if (look.tag == t)
             move() ;
-            else
-            error("Syntax error") ;
+            else{
+                error("Syntax error") ;
+            }
         }
-        catch(Error e) {  
+        catch(Error e) {
+            e.printStackTrace(); //Judah: it was missing these
+            System.exit(1) ;
         }	
     }
 }

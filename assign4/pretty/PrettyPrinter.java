@@ -29,11 +29,14 @@ public class PrettyPrinter extends ASTVisitor {
     }
 
     public void visit(BlockStatmentNode n) {
+        // int count = 0;
         println("{") ;
 
         indentUp() ;
 
-        n.assign.accept(this);
+        //Old: n.assign.accept(this);
+        for (int i = 0; i < n.size; i++)
+            n.acceptAssignmentNode(i, this) ;
 
         indentDown() ;
 

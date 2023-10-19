@@ -20,9 +20,11 @@ These are just notes that do not belonn in the main README.
  - The assignment was added to recognise: assign = id=id;
 
 ### How I add a new nodes to the compiler.
-- add a visit class with accept() calls only for the node
+- add a visit class with accept() calls only for the node to the ASTVisitor class.
 - create the node.
 - add the new node to the relative visit functions in parser.
 - fix the nodes that dont like the new node as their values.
     - ex: changed right IdentifierNode to AdditionNode in the AssignmentNode.
 - added the visit function to the Parser for the new node.
+- fixed the pretty printer and added the new visit function to it.
+

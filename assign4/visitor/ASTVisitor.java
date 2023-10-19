@@ -22,8 +22,9 @@ public class ASTVisitor {
     }
 
     public void visit (BlockStatmentNode n) {
-        
-        n.assign.accept(this) ;
+        int count = 0;
+        //Old: n.assign.accept(this) ;
+        n.acceptAssignmentNode(count, this) ;
     }
 
     public void visit (IdentifierNode n) {
