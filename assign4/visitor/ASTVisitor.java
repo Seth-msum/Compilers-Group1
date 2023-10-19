@@ -15,11 +15,11 @@ public class ASTVisitor {
         n.right.accept(this) ;
     }
 
-    // public void visit (AdditionNode n) {
+    public void visit (AdditionNode n) {
 
-    //     n.left.accept(this) ;
-    //     n.right.accept(this) ;
-    // }
+        n.left.accept(this) ;
+        n.right.accept(this) ;
+    }
 
     public void visit (BlockStatmentNode n) {
         

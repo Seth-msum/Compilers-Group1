@@ -52,6 +52,13 @@ public class PrettyPrinter extends ASTVisitor {
         println(" ;") ;
     }
 
+    public void visit (AdditionNode n) {
+
+        n.left.accept(this) ;
+        print(" + ") ;
+        n.right.accept(this) ;
+    }
+
     public void visit(IdentifierNode n) {
         
         // printIndent() ;
@@ -64,69 +71,33 @@ public class PrettyPrinter extends ASTVisitor {
     ////////////////////////////////////////
 
     void print(String s){
-
         System.out.print(s);
     }
 
     void println(String s){
-
         System.out.println(s);
     }
 
     void printSpace(){
-
         System.out.print(" ");
     }
 
     int indent = 0;
 
     void indentUp(){
-
         indent++;
     }
 
     void indentDown(){
-
         indent--;
     }
 
     void printIndent(){
-
         String s = "";
         for (int i=0; i<indent; i++){
-
             s += "  ";
         }
-
         print(s);
-    }
-
-    public void visit(BlockStatementNode n){
-
-        println("{");
-        indentUp();
-        n.identifier.accept(this);
-        indentDown();
-
-        println("}");
-    }
-
-    public void visit(AssignmentNode n){
-
-        printIndent();
-        n.id.accept(this);
-        print(" = ");
-
-        printIndent();
-        n.right.accept(this);
-        print(";");
-    }
-
-    public void visit(IdentifierNode n){
-
-        //printIndent();
-        print(n.id);
-        //println(";");
     }
 
 }

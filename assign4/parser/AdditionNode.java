@@ -4,21 +4,21 @@ import assign4.visitor.* ;
 
 public class AdditionNode extends Node {
 
-    //public LiteralNode left  ;
-    //public LiteralNode right ;
+    public IdentifierNode left  ;
+    public IdentifierNode right ;
 
     public AdditionNode () {
 
     }
     
-    // public AdditionNode (LiteralNode left, LiteralNode right) {
+    public AdditionNode (IdentifierNode left, IdentifierNode right) {
 
-    //     this.left  = left  ;
-    //     this.right = right ;
-    // }
+        this.left  = left  ;
+        this.right = right ;
+    }
 
     public void accept(ASTVisitor v) {
 
-        //v.visit(this);
+        v.visit(this);
     }
 }
