@@ -6,7 +6,7 @@ public class AssignmentNode implements Node {
 
     public IdentifierNode  id  ;
     //public IdentifierNode right ;
-    public AdditionNode right ;
+    public Node right ;
 
     public AssignmentNode () {
         
