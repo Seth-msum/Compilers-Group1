@@ -4,14 +4,14 @@ import assign4.visitor.* ;
 
 public class AdditionNode extends Node {
 
-    public IdentifierNode left  ;
-    public IdentifierNode right ;
+    public VariableNode left  ;
+    public VariableNode right ;
 
     public AdditionNode () {
 
     }
     
-    public AdditionNode (IdentifierNode left, IdentifierNode right) {
+    public AdditionNode (VariableNode left, VariableNode right) {
 
         this.left  = left  ;
         this.right = right ;

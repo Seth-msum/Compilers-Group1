@@ -1,9 +1,10 @@
 {
-    sum    = a + 
-    b ;
-    test = a +
-    
-     c ;
-    call = gb + brd             ;
+    sum = a + b ;
+    test = a + c ;
+    call = gb + brd ;
+    fall = g87 + j9 ;
+    jer = 894 + 548 ;
+    jay = fall + 9 ;
+    jok = 21 + jer ;
 }
 

@@ -69,14 +69,33 @@ public class Parser extends ASTVisitor {
 
     public void visit (AdditionNode n) {
         //This is additionNode = id + id
-        n.left = new IdentifierNode() ;
+        n.left = new VariableNode() ;
         n.left.accept(this) ;
 
         match('+');
 
-        n.right = new IdentifierNode() ;
+        n.right = new VariableNode() ;
         n.right.accept(this) ;
 
+    }
+
+    // Untested !
+    public void visit(VariableNode n) { 
+        if (look.tag == Tag.NUM) {
+            n.type = 1 ;
+            n.num = (Num)look ;
+            match(Tag.NUM) ;
+        }
+        else if (look.tag == Tag.ID) {
+            n.type = 2 ;
+            n.id = new IdentifierNode() ;
+            n.id.accept(this) ;
+        }
+        else {
+            error("VariableNodeUnexpects");
+            System.out.println("error at parse-visit-variableNode");
+            System.exit(1) ;
+        }
     }
 
     public void visit (IdentifierNode n) {
@@ -96,9 +115,11 @@ public class Parser extends ASTVisitor {
             System.out.println("IOException") ;
         }
     }
+
     void error (String s) {
 	    throw new Error ("near line " + lexer.line + ": " + s) ;
     }
+
     void match (int t) {
         try {
             if (look.tag == t)
