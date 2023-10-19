@@ -68,6 +68,17 @@ public class PrettyPrinter extends ASTVisitor {
         n.right.accept(this) ;
     }
 
+    public void visit (VariableNode n) {
+        if (n.type == 1) {
+            n.print() ;
+        }
+        else {
+            n.id.accept(this) ;
+        }
+        
+
+    }
+
     public void visit(IdentifierNode n) {
         
         // printIndent() ;

@@ -62,21 +62,58 @@ public class Parser extends ASTVisitor {
         n.id.accept(this) ;
         match('=') ;
         //n.right = new IdentifierNode() ; //Old
-        n.right = new AdditionNode() ;
-        n.right.accept(this) ;
+
+        VariableNode temp = new VariableNode() ;
+        temp.accept(this);
+        if (look.tag == ';') {
+            n.right = temp ;
+        }
+        else if (look.tag == '+') {
+            n.right = new AdditionNode(temp) ;
+            n.right.accept(this) ;
+        }
+        
         match(';') ;
     }
 
     public void visit (AdditionNode n) {
-        //This is additionNode = id + id
-        n.left = new IdentifierNode() ;
-        n.left.accept(this) ;
+        // It seems that this can possible be cleaned up more but 
+        // Otherwise it works.
 
         match('+');
 
-        n.right = new IdentifierNode() ;
+        n.right = new VariableNode() ;
         n.right.accept(this) ;
+        System.out.println("check: " + look.toString());
+        if ((look.tag == ';') ){
+            return ;
+        }
+        else {
+            Node tmp = n.right ;
+            n.right = new AdditionNode(tmp) ;
+            n.right.accept(this);
+        }
 
+    }
+
+    
+    public void visit(VariableNode n) { 
+        if (look.tag == Tag.NUM) {
+            n.type = 1 ;
+            n.num = (Num)look ;
+            System.out.println("Number: " + n.num);
+            match(Tag.NUM) ;
+        }
+        else if (look.tag == Tag.ID) {
+            n.type = 2 ;
+            n.id = new IdentifierNode() ;
+            n.id.accept(this) ;
+        }
+        else {
+            error("VariableNodeUnexpects");
+            System.out.println("error at parse-visit-variableNode");
+            System.exit(1) ;
+        }
     }
 
     public void visit (IdentifierNode n) {
@@ -96,9 +133,11 @@ public class Parser extends ASTVisitor {
             System.out.println("IOException") ;
         }
     }
+
     void error (String s) {
 	    throw new Error ("near line " + lexer.line + ": " + s) ;
     }
+
     void match (int t) {
         try {
             if (look.tag == t)

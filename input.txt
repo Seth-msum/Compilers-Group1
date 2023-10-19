@@ -1,13 +1,20 @@
 {
+
+    sum = a + b + g + 98 + 89;
+    while
+    test = a + c ;
+    call = gb + brd ;
+    while ;
+    while ;
+    fall = g87 + j9 ;
+    jer = 894 + 548 ;
+    call = a ;
+    jay = fall + 9 ;
+    jok = 21 + jer ;
+    test = a ;
     sum    = a + 
     b ;
     test = a +
     
-     c ;
-    call = gb + brd             ;
-    while ;
-    test = a + b ;
-    while ;
-    while ;
 }
 

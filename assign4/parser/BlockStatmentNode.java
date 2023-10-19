@@ -8,7 +8,7 @@ import java.util.ArrayList ;
  * Stmts --> Stmts stmt
  */
 
-public class BlockStatmentNode extends Node {
+public class BlockStatmentNode implements Node {
     
     //public AssignmentNode assign ;
     public ArrayList<AssignmentNode> assignments ;
