@@ -15,11 +15,18 @@ public class BlockStatmentNode implements Node {
     public int size = 0;
     //public int class_cursor ;
 
-    public BlockStatmentNode () {
-        this.assignments = new ArrayList<AssignmentNode>() ;
+    // Jayce code: Please Check
+    public boolean isWhileBlock;
+    public BlockStatmentNode() {
+        this.assignments = new ArrayList<AssignmentNode>();
         this.size = 0;
-        //this.class_cursor = 0;
+        this.isWhileBlock = false; // By default, it's not a while block.
     }
+
+    public void setAsWhileBlock(boolean isWhileBlock) {
+        this.isWhileBlock = isWhileBlock;
+    }
+    // ^^^
 
     //Warning, not fully tested.
     public void addAssignmentNode() {

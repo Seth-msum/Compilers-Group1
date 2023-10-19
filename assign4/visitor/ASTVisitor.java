@@ -34,4 +34,8 @@ public class ASTVisitor {
     public void visit (IdentifierNode n) {
 
     }
+
+    public void visit(WhileNode n) {
+
+    }
 }
