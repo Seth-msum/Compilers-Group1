@@ -4,7 +4,7 @@ import assign4.parser.*;
 import assign4.pretty.PrettyPrinter;
 import assign4.visitor.* ;
 
-public class CompilationUnit extends Node {
+public class CompilationUnit implements Node {
 
     //Node ast ;
     //public AssignmentNode assign ;

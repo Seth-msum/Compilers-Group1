@@ -68,22 +68,36 @@ public class Parser extends ASTVisitor {
     }
 
     public void visit (AdditionNode n) {
-        //This is additionNode = id + id
-        n.left = new VariableNode() ;
-        n.left.accept(this) ;
+        // It seems that this can possible be cleaned up more but 
+        // Otherwise it works.
+        if (n.left == null){
+            n.left = new VariableNode() ;
+            n.left.accept(this) ;
+        }
+
 
         match('+');
 
         n.right = new VariableNode() ;
         n.right.accept(this) ;
+        System.out.println("check: " + look.toString());
+        if ((look.tag == ';') ){
+            return ;
+        }
+        else {
+            Node tmp = n.right ;
+            n.right = new AdditionNode(tmp) ;
+            n.right.accept(this);
+        }
 
     }
 
-    // Untested !
+    
     public void visit(VariableNode n) { 
         if (look.tag == Tag.NUM) {
             n.type = 1 ;
             n.num = (Num)look ;
+            System.out.println("Number: " + n.num);
             match(Tag.NUM) ;
         }
         else if (look.tag == Tag.ID) {

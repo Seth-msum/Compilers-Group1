@@ -3,7 +3,7 @@ package assign4.parser ;
 import assign4.visitor.* ;
 import assign4.lexer.* ;
 
-public class IdentifierNode extends Node {
+public class IdentifierNode implements Node {
 
     public String id ;
     public Word w ;

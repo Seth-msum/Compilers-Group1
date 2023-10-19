@@ -2,7 +2,7 @@ package assign4.parser ;
 
 import assign4.visitor.* ;
 
-public class AssignmentNode extends Node {
+public class AssignmentNode implements Node {
 
     public IdentifierNode  id  ;
     //public IdentifierNode right ;

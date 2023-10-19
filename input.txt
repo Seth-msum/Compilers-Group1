@@ -1,5 +1,5 @@
 {
-    sum = a + b ;
+    sum = a + b + g + 98 + 89;
     test = a + c ;
     call = gb + brd ;
     fall = g87 + j9 ;

@@ -3,7 +3,7 @@ package assign4.parser;
 import assign4.visitor.*;
 import assign4.lexer.* ;
 
-public class VariableNode extends ASTVisitor{
+public class VariableNode implements Node{
     public int type ; // Warning, not protected of being changed.
     public Num num ; // type 1
     public IdentifierNode id ; // type 2
