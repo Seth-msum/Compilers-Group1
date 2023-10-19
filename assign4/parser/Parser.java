@@ -45,7 +45,7 @@ public class Parser extends ASTVisitor {
         n.acceptAssignmentNode(count, this) ; //replaces n.assign.accept(this) ;
 
         //
-        if(look.tag != '}') {
+        while(look.tag != '}') {
             count += 1 ;
             n.addAssignmentNode();
             n.acceptAssignmentNode(count, this) ;
@@ -104,7 +104,9 @@ public class Parser extends ASTVisitor {
             if (look.tag == t)
             move() ;
             else{
-                error("Syntax error") ;
+                System.out.println("exptected: " + (char)t);
+                System.out.println("recieved: " + look.toString());
+                error("Syntax error: ") ;
             }
         }
         catch(Error e) {
