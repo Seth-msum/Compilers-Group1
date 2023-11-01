@@ -2,7 +2,7 @@ package assign4.parser;
 
 import assign4.visitor.ASTVisitor;
 
-public class WhileNode extends Node {
+public class WhileNode implements Node {
     public IdentifierNode condition;
     public BlockStatmentNode body;
 
