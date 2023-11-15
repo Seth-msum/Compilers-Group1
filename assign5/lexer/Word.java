@@ -1,4 +1,4 @@
-package assign5.lexer ;
+package assign4.lexer ;
 
 public class Word extends Token {
     
