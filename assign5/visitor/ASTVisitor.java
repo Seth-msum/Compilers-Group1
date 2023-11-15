@@ -1,6 +1,6 @@
-package assign4.visitor;
+package assign5.visitor;
 
-import assign4.parser.* ;
+import assign5.parser.* ;
 
 public class ASTVisitor {
     
@@ -15,7 +15,7 @@ public class ASTVisitor {
     } 
 
     //added by this lab
-    public void visit (Statements n) { // This is the most important node to cover for this video.
+    public void visit (Statements n) { // This is the most important node to cover for lab 06
         
         if (n.stmts != null) {
 
@@ -27,7 +27,14 @@ public class ASTVisitor {
     public void visit (AssignmentNode n) {
         
         n.left.accept(this) ;
-        n.right.accept(this) ;
+        //n.right.accept(this) ;
+
+        if (n.right instanceof IdentifierNode)
+            ((IdentifierNode)n.right).accept(this) ;
+        else if (n.right instanceof LiteralNode)
+            ((LiteralNode)n.right).accept(this) ;
+        else 
+            ((BinExprNode)n.right).accept(this) ;
     } 
 
     //added by this lab
@@ -35,6 +42,13 @@ public class ASTVisitor {
 
         // n.left.accept(this) ;
         // n.right.accept(this) ;
+    
+        // if (n.right instanceof IdentifierNode)
+        //     ((IdentifierNode)n.right).accept(this) ;
+        // else
+        //     ((LiteralNode)n.right).accept(this) ;
+        
+        //     n.right.accept(this) ;
     }
 
     // public void visit (LiteralNode n) {

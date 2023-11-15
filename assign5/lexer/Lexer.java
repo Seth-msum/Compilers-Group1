@@ -1,4 +1,4 @@
-package assign4.lexer;
+package assign5.lexer;
 
 import java.io.* ;
 import java.util.* ;
@@ -6,16 +6,22 @@ import java.util.* ;
 public class Lexer {
     public int line = 1 ;
     private char peek = ' ' ;
+
     private FileInputStream in ;
     private BufferedInputStream bin ;
+
     //private Hashtable words = new Hashtable() ;
     private Hashtable<String, Word> words = new Hashtable<String, Word>() ;
     // void reserve(Word t) {
     //     words.put(t.lexeme, t) ;
     // }
     public Lexer() {
-        reserve( new Word("true", Tag.TRUE) ) ;
-        reserve( new Word("false", Tag.FALSE) ) ;
+        //reserve( new Word("true", Tag.TRUE) ) ;
+        //reserve( new Word("false", Tag.FALSE) ) ;
+
+        reserve(Word.True) ;
+        reserve(Word.False) ;
+        
         setupIOStream() ;
     }
     void reserve(Word t) {

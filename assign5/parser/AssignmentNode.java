@@ -1,18 +1,20 @@
-package assign4.parser;
+package assign5.parser;
 
-import assign4.visitor.* ;
-import assign4.lexer.* ;
+import assign5.visitor.* ;
+import assign5.lexer.* ;
 
 public class AssignmentNode extends Node{
 
     public IdentifierNode left ;
-    public BinExprNode     right ; // for future assignments, this should just be an expression node.
+    //public BinExprNode     right ;
+    public Node         right ;
 
     public AssignmentNode () {
 
     }
 
-    public AssignmentNode (IdentifierNode id, BinExprNode right ) {
+    // public AssignmentNode (IdentifierNode id, BinExprNode right ) {
+    public AssignmentNode (IdentifierNode left, Node right ) {
 
         this.left = left ;
         this.right = right ;

@@ -1,7 +1,7 @@
-package assign4.parser;
+package assign5.parser;
 
-import assign4.visitor.* ;
-import assign4.lexer.* ;
+import assign5.visitor.* ;
+import assign5.lexer.* ;
 
 // a =  1 ;
 // b = c ;
@@ -11,15 +11,23 @@ import assign4.lexer.* ;
 public class BinExprNode extends Node{
     
     public Node         left ;
-    public BinExprNode  right ;
+    //public BinExprNode  right ;
+    public Node         right ;
     public Token        op ;
 
     public BinExprNode () {
 
     }
 
-    public BinExprNode (Node left, BinExprNode right) {
+    public BinExprNode (Node left, Node right) {
 
+        this.left = left ;
+        this.right = right ;
+    }
+
+    public BinExprNode( Token op, Node left, Node right) {
+
+        this.op = op;
         this.left = left ;
         this.right = right ;
     }
