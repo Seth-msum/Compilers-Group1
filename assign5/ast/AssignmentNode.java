@@ -7,7 +7,7 @@ public class AssignmentNode extends StatementNode{
 
     public IdentifierNode left ;
     //public BinExprNode     right ;
-    public Node         right ;
+    public Node         right ; //This if for the bool
 
     public AssignmentNode () {
 

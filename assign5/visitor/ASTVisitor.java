@@ -52,6 +52,10 @@ public class ASTVisitor {
 
             if (n.stmt instanceof AssignmentNode)
                 ((AssignmentNode)n.stmt).accept(this) ;
+            else if (n.stmt instanceof WhileNode)
+                ((WhileNode)n.stmt).accept(this) ;
+            else if (n.stmt instanceof DoNode)
+                ((DoNode)n.stmt).accept(this) ;
             n.stmts.accept(this) ;
         }
     } 
@@ -67,9 +71,83 @@ public class ASTVisitor {
             ((NumNode)n.right).accept(this) ;
         else if (n.right instanceof RealNode)
             ((RealNode)n.right).accept(this) ;
+        else if (n.right instanceof BoolNode)
+            ((BoolNode)n.right).accept(this) ;
         else 
             ((BinExprNode)n.right).accept(this) ;
     } 
+
+    public void visit(WhileNode n) {
+
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        if (n.right instanceof AssignmentNode)
+            ((AssignmentNode)n.right).accept(this) ;
+        else if (n.right instanceof WhileNode)
+            ((WhileNode)n.right).accept(this) ;
+        else if (n.right instanceof DoNode)
+            ((DoNode)n.right).accept(this) ;
+    }
+
+    public void visit(DoNode n) {
+
+        if (n.left instanceof AssignmentNode)
+            ((AssignmentNode)n.left).accept(this) ;
+        else if (n.left instanceof WhileNode)
+            ((WhileNode)n.left).accept(this) ;
+        else if (n.left instanceof DoNode)
+            ((DoNode)n.left).accept(this) ;
+
+        if (n.right instanceof IdentifierNode)
+            ((IdentifierNode)n.right).accept(this) ;
+        else if (n.right instanceof NumNode)
+            ((NumNode)n.right).accept(this) ;
+        else if (n.right instanceof RealNode)
+            ((RealNode)n.right).accept(this) ;
+        else 
+            ((BinExprNode)n.right).accept(this) ;
+    }
+    // stmt --> if ( bool ) stmt [else stmt]
+    public void visit (IfNode n) {
+
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        if (n.right instanceof AssignmentNode)
+            ((AssignmentNode)n.right).accept(this) ;
+        else if (n.right instanceof WhileNode)
+            ((WhileNode)n.right).accept(this) ;
+        else if (n.right instanceof DoNode)
+            ((DoNode)n.right).accept(this) ;
+        
+        if (n.theElse != null) {
+
+            if (n.theElse instanceof AssignmentNode)
+                ((AssignmentNode)n.theElse).accept(this) ;
+            else if (n.theElse instanceof WhileNode)
+                ((WhileNode)n.theElse).accept(this) ;
+            else if (n.theElse instanceof DoNode)
+                ((DoNode)n.theElse).accept(this) ;
+        }
+
+    }
 
     public void visit (ExprNode n) {
 
@@ -100,6 +178,9 @@ public class ASTVisitor {
 
     public void visit (RealNode n) {
 
+    }
+    public void visit (BoolNode n) {
+        
     }
 
     public void visit (Node n) {

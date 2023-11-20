@@ -6,6 +6,7 @@ import java.util.* ;
 public class Lexer {
     public int line = 1 ;
     private char peek = ' ' ;
+    public int tokenCount = 0 ;
 
     private FileInputStream in ;
     private BufferedInputStream bin ;
@@ -57,6 +58,7 @@ public class Lexer {
     }
 
     public Token scan() throws IOException {
+        tokenCount++ ;
         for ( ; ; readch() ) {
             if(peek == ' ' || peek == '\t')
                 continue ;

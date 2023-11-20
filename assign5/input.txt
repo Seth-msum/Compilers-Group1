@@ -1,10 +1,13 @@
 {
-    int[2][3] i ;
-    float f ;
-    int g ;
-
-    f = 1.0 ; i = 219 ;
-    f = 1 + 3 * i / f ;
-    f = 1 + 2 + i * 2 ;
-    g = 5 * 9 + 3 * 4  - 4 + 7 / 6 ;
+    int i ; 
+    int j ; 
+    float v ; 
+    float x ; 
+    float[100] a ;
+    while ( true ) { a = b ; }
+    while( true  ) {
+        v = b ;
+        do i = i+1 ; while( false ) ;
+        if( true ) j = k ;
+    }
 }

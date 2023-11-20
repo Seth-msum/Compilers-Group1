@@ -12,7 +12,7 @@ import assign5.lexer.* ;
 //
 ///////
 
-public class Statements extends Node {
+public class Statements extends StatementNode {
 
     public Statements stmts ;
     public StatementNode stmt ;
