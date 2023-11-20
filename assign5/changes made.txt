@@ -1,0 +1,51 @@
+theres more earlier but i started tracking late
+...
+
+Made Real class in lexer
+Made Type class in lexer
+the numeric function returns false for boolean 
+the Lexer.java has new reserve words - added if, else, while, do , break, int, char, bool, float
+added readch(char c) function to Lexer
+	It is needed in the scan function
+	It is used in the scan function to recognise Words that are two ormore characters long.
+The num part of the scan function was changed to accept float values.
+
+	I changed the Real class to accept float instead of int, IDK why it was int.
+
+In ASTVisitor, "added n.decls.accept(this) ;" to the BlockStatementNode visit
+	added a visit function for Declarations class
+
+Modified BlockStatementNode to include Declaratoins
+
+Since stmt derives block, the BlockStatementNode should then extend StatementNode
+
+Added DeclarationNode and TypeNode visit functions to ASTVisitor.
+
+Added the Declarations class to the ast folder
+
+in the pretty parser or related, be sure to check if the decls variable for Declarations is empty or not
+
+Added the DeclarationNode class to the ast folder
+
+added the ArrayTypeNode visit to ASTVisitor
+
+added the TypeNode class to ast folder
+	possible issue at the visit function in ASTVisitor
+
+
+added to visit AssignmentNode of ASTVisitor, an else if condition for RealNode
+
+added to ASTVisitor, a visit function for ExprNode
+
+added the ExprNode to ast folder
+
+LiteralNode was changed to NumNode
+
+in parser, added n.decls instance and visit for BlockStatementNode
+
+in parser, added visit function for Declarations
+
+in parser, added visito funtcion for TypeNode
+!! possible issue with parser -> TypeNode visitor not looking for bool or char
+
+!! we need to implememt the different cases for parser -> Statemtnts. if, while, do, block
