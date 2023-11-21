@@ -1,5 +1,9 @@
 package assign5.unparser;
 
+import java.net.IDN;
+
+import javax.swing.plaf.nimbus.State;
+
 import assign5.ast.* ;
 import assign5.parser.* ;
 import assign5.visitor.* ;
@@ -60,6 +64,7 @@ public class Unparser extends ASTVisitor{
 
     public void visit(BlockStatementNode n) {
 
+        printIndent() ;
         println("{") ;
 
         indentUp() ;
@@ -74,6 +79,7 @@ public class Unparser extends ASTVisitor{
 
         indentDown() ;
 
+        printIndent() ;
         println("}") ;
  
     }
@@ -126,17 +132,34 @@ public class Unparser extends ASTVisitor{
 
     public void visit(Statements n) {
 
+        //((StatementNode)n.stmt).accept(this) ;
+        n.stmt.accept(this) ;
+
         if (n.stmts != null) {
 
-            if (n.stmt instanceof AssignmentNode)
-                ((AssignmentNode)n.stmt).accept(this) ;
+            
             n.stmts.accept(this) ;
 
         }
     }
 
     public void visit (StatementNode n) {
-    
+        //System.out.println("Got To StatemtnNode");
+        //print(n.stmt.getClass().getSimpleName()) ;
+        indentUp() ;
+        if (n.stmt instanceof AssignmentNode)
+            ((AssignmentNode)n.stmt).accept(this) ;
+        else if (n.stmt instanceof WhileNode)
+            ((WhileNode)n.stmt).accept(this) ;
+        else if (n.stmt instanceof DoNode) 
+            ((DoNode)n.stmt).accept(this) ;
+        else if (n.stmt instanceof IfNode)
+            ((IfNode)n.stmt).accept(this) ;
+        else if (n.stmt instanceof BreakNode) {
+            printIndent() ;
+            println("break ;");
+        }
+        indentDown() ;
     }
 
     public void visit(AssignmentNode n) {
@@ -146,6 +169,58 @@ public class Unparser extends ASTVisitor{
         n.left.accept(this) ;
 
         print(" = ") ;
+        //print("!!"+n.right.getClass().getSimpleName()+"!!") ;
+        if (n.right instanceof Locations)
+            ((Locations)n.right).accept(this) ;
+        else if (n.right instanceof NumNode)
+            ((NumNode)n.right).accept(this) ;
+        else if (n.right instanceof RealNode)
+            ((RealNode)n.right).accept(this) ;
+        else if (n.right instanceof BoolNode)
+            ((BoolNode)n.right).accept(this) ;
+        else 
+            ((BinExprNode)n.right).accept(this) ;
+
+        println(" ;") ;
+    }
+
+    public void visit(WhileNode n) {
+        
+        printIndent() ;
+
+        print("while ( ");
+
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        println(" )") ;
+
+        // indentUp() ;
+        n.right.accept(this) ;
+        // indentDown() ;
+    }
+
+    public void visit(DoNode n) {
+
+        printIndent() ;
+
+        println("do ") ;
+
+        // print("!!"+n.left.getClass().getSimpleName()+"!!") ;
+        indentUp() ;
+        n.left.accept(this) ;
+        indentDown() ;
+        
+        printIndent() ; 
+        print("while (") ;
 
         if (n.right instanceof IdentifierNode)
             ((IdentifierNode)n.right).accept(this) ;
@@ -153,16 +228,54 @@ public class Unparser extends ASTVisitor{
             ((NumNode)n.right).accept(this) ;
         else if (n.right instanceof RealNode)
             ((RealNode)n.right).accept(this) ;
+        else if (n.right instanceof BoolNode)
+            ((BoolNode)n.right).accept(this) ;
         else 
             ((BinExprNode)n.right).accept(this) ;
+        
+        println(" ) ;") ;
+        println(""); 
 
-        println(" ;") ;
+    }
+
+    public void visit(IfNode n) {
+
+        printIndent(); 
+        print("if (");
+
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        println(" )") ;
+
+        indentUp() ;
+        n.right.accept(this) ;
+        indentDown() ;
+
+        if (n.theElse != null) {
+            printIndent() ;
+            println("else ") ;
+
+            indentUp() ;
+            n.theElse.accept(this) ;
+            indentDown() ;
+        }
+
+        println("") ;
     }
 
     public void visit(BinExprNode n) {
 
-        if(n.left instanceof IdentifierNode)
-            ((IdentifierNode)n.left).accept(this) ;
+        if(n.left instanceof Locations)
+            ((Locations)n.left).accept(this) ;
         else if (n.left instanceof NumNode)
             ((NumNode)n.left).accept(this) ;
         else if (n.left instanceof RealNode)
@@ -205,5 +318,53 @@ public class Unparser extends ASTVisitor{
         //printIndent() ;
         print("" + n.value) ;
         //println(" ;") ;
+    }
+
+    public void visit(BoolNode n) {
+
+        print("" + n.value) ;
+    }
+
+    public void visit(Locations n) {
+
+        indentUp() ;
+        n.left.accept(this) ;
+        indentDown() ;
+
+        if (n.right != null) {
+
+            indentUp() ;
+            n.right.accept(this) ;
+            indentDown() ;
+        }
+    }
+
+    public void visit(LocationNode n) {
+
+        print("[ ") ;
+
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        print(" ]") ;
+
+        if(n.right != null) {
+            indentUp() ;
+            n.right.accept(this) ;
+            indentDown() ;
+        }
+    }
+
+    public void visit(BreakNode n) {
+        printIndent();
+        println("break ;") ;
     }
 }

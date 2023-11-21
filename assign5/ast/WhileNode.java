@@ -17,7 +17,7 @@ public class WhileNode extends StatementNode {
     public WhileNode(Node left, StatementNode right) {
 
         this.left = left ;
-        this.right = right ;
+        this.left = right ;
     }
 
     public void accept(ASTVisitor v) {

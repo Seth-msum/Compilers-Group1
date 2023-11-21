@@ -151,7 +151,7 @@ public class Parser extends ASTVisitor {
         match(';') ;
         declaredArrays.put(n.id.id, metaData) ;
 
-        System.out.println("Leaving DeclarationNode");
+        //System.out.println("Leaving DeclarationNode");
     }
 
     // type--> basic | ArrayTypeNode
@@ -299,6 +299,7 @@ public class Parser extends ASTVisitor {
                 case Tag.BREAK:
                     
                     match(Tag.BREAK);
+                    tmp = new BreakNode() ;
                     for (int i = 0; i < level; i++) System.out.print(indent) ;
                     System.out.println("Break");
                     match(';') ;
@@ -392,46 +393,46 @@ public class Parser extends ASTVisitor {
         match('(') ;
 
         //Start of bool
-        Node rhs_assign = null ;
+        Node lhs_assign = null ;
         if (look.tag == Tag.ID) {
-            rhs_assign = new Locations() ;
+            lhs_assign = new Locations() ;
             level++ ;
-            ((Locations)rhs_assign).accept(this) ;
+            ((Locations)lhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.NUM) {
-            rhs_assign = new NumNode() ;
+            lhs_assign = new NumNode() ;
             level++ ;
-            ((NumNode)rhs_assign).accept(this) ;
+            ((NumNode)lhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.REAL) {
-            rhs_assign = new RealNode() ;
+            lhs_assign = new RealNode() ;
             level++ ;
-            ((RealNode)rhs_assign).accept(this) ;
+            ((RealNode)lhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.TRUE || look.tag == Tag.FALSE) {
-            rhs_assign = new BoolNode(look.tag) ;
+            lhs_assign = new BoolNode(look.tag) ;
             level++ ;
-            ((BoolNode)rhs_assign).accept(this) ;
+            ((BoolNode)lhs_assign).accept(this) ;
             level-- ;
         }
 
 
         if (look.tag == ')') {// e.g. while (b|5|4.19);
             //System.out.println("found edge");
-            n.left = rhs_assign ;
+            n.left = lhs_assign ;
         } else { // e.g. while (b=5) ;
             for (int i = 0; i < level; i++) System.out.print(indent) ;
             System.out.println("operator: " + look) ;
 
             level++ ;
             // Build AST for binary expressions with operator precedence
-            n.left = (BinExprNode) parseBinExprNode( rhs_assign, 0) ;
+            n.left = (BinExprNode) parseBinExprNode( lhs_assign, 0) ;
             level-- ;
 
-            System.out.println("**** Root Node operator: " + ((BinExprNode)n.right).op) ;
+            System.out.println("**** Root Node operator: " + ((BinExprNode)n.left).op) ;
         }
         //move past and finnish )
         match(')') ;
@@ -571,6 +572,8 @@ public class Parser extends ASTVisitor {
 
         if (look.tag == Tag.ELSE) {
             match(Tag.ELSE);
+            for (int i = 0; i < level; i++) System.out.print(indent) ;
+            System.out.println("else") ;
             level++ ;
             n.theElse  = stmt() ;
             level-- ;

@@ -90,12 +90,12 @@ public class ASTVisitor {
         else 
             ((BinExprNode)n.left).accept(this) ;
         
-        if (n.right instanceof AssignmentNode)
-            ((AssignmentNode)n.right).accept(this) ;
-        else if (n.right instanceof WhileNode)
-            ((WhileNode)n.right).accept(this) ;
-        else if (n.right instanceof DoNode)
-            ((DoNode)n.right).accept(this) ;
+        if (n.left instanceof AssignmentNode)
+            ((AssignmentNode)n.left).accept(this) ;
+        else if (n.left instanceof WhileNode)
+            ((WhileNode)n.left).accept(this) ;
+        else if (n.left instanceof DoNode)
+            ((DoNode)n.left).accept(this) ;
     }
 
     public void visit(DoNode n) {
@@ -208,8 +208,13 @@ public class ASTVisitor {
         
     }
 
+    public void visit (BreakNode n) {
+
+    }
+
     public void visit (Node n) {
-        System.out.println("There was a mess up!");
+        System.out.println("There was a mess up! ASTVisitor instance needs a function for: " + n.getClass().getSimpleName());
+        System.out.println("Or the node does not have an access function.");
         System.exit(-1) ;
     }
 }

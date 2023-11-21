@@ -14,6 +14,6 @@ public class Main {
         Lexer lexer = new Lexer() ;
         Parser parser = new Parser(lexer) ;
         //TreePrinter tree = new TreePrinter(parser) ;
-        //Unparser unparser = new Unparser(parser) ;
+        Unparser unparser = new Unparser(parser) ;
     }
 }
