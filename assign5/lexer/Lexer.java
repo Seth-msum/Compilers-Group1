@@ -92,12 +92,12 @@ public class Lexer {
         
         case '<':
             if(readch('=') )
-                return Word.eq ;
+                return Word.le ;
             else return new Token('<') ;
         
         case '>':
             if(readch('=') )
-                return Word.eq ;
+                return Word.ge ;
             else return new Token('>') ;
         
         }

@@ -9,9 +9,14 @@ public class TypeNode extends Node{
     
     public Type basic ;                 // basic type (e.g Type.Float)
     public ArrayTypeNode array = null ; // By default, array type is null
-
+    public IdentifierDescriptors metaData ;
     public TypeNode () {
 
+    }
+
+    public TypeNode (IdentifierDescriptors metaData) {
+
+        this.metaData = metaData ;
     }
 
     public TypeNode (Type basic, ArrayTypeNode array) {

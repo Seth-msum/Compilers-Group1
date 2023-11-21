@@ -5,7 +5,7 @@ import assign5.lexer.* ;
 
 public class AssignmentNode extends StatementNode{
 
-    public IdentifierNode left ;
+    public Locations left ;
     //public BinExprNode     right ;
     public Node         right ; //This if for the bool
 
@@ -14,7 +14,7 @@ public class AssignmentNode extends StatementNode{
     }
 
     // public AssignmentNode (IdentifierNode id, BinExprNode right ) {
-    public AssignmentNode (IdentifierNode left, Node right ) {
+    public AssignmentNode (Locations left, Node right ) {
 
         this.left = left ;
         this.right = right ;

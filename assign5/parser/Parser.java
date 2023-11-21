@@ -5,6 +5,8 @@ import assign5.ast.* ;
 import assign5.lexer.* ;
 
 import java.io.* ;
+//import java.util.ArrayList;
+import java.util.Hashtable;
 
 
 public class Parser extends ASTVisitor {
@@ -14,8 +16,22 @@ public class Parser extends ASTVisitor {
     public Token    look        = null ;
     int             level       = 0 ;
     String          indent      = "..." ;
+    Boolean         printMetaData = false ;
     //public  int     debugSkp     = 0 ;
     //endregion
+
+    //public Hashtable<Lexer, ArrayList<Object>> declardvariables = new Hashtable<Lexer, ArrayList<Object>>() ;
+    public Hashtable<String, IdentifierDescriptors> declaredArrays = new Hashtable<String, IdentifierDescriptors>() ;
+
+    /*
+    Word w = (Word)words.get(s) ;
+    if (w != null )
+        return w ;
+    w = new Word(s, Tag.ID) ;
+    words.put(s, w) ;
+    return w ;
+    declaredVariables.put(n.id.w, 1) ;
+     */
 
     public Parser (Lexer lexer) {
         this.lexer = lexer ;
@@ -74,7 +90,7 @@ public class Parser extends ASTVisitor {
 
         for (int i = 0; i < level; i++) System.out.print(indent) ;        //N
         System.out.println("BlockStatmentNode");
-        System.out.println("Going into {} block.");
+        //System.out.println("Going into {} block.");
         match('{') ;
 
         n.decls = new Declarations() ;
@@ -87,7 +103,7 @@ public class Parser extends ASTVisitor {
         n.stmts.accept(this) ;
 
         match('}') ;
-        System.out.println("Leaving {} block");
+        //System.out.println("Leaving {} block");
 
     }
 
@@ -114,10 +130,12 @@ public class Parser extends ASTVisitor {
     // decl --> type id ;
     public void visit(DeclarationNode n) {
         
+        IdentifierDescriptors metaData = new IdentifierDescriptors() ;
+
         for (int i = 0; i < level; i++) System.out.print(indent) ;        //N
         System.out.println("DeclarationNode") ; //For parser tracking
 
-        n.type = new TypeNode() ;
+        n.type = new TypeNode(metaData) ;
         level++ ;
         n.type.accept(this) ;
         level-- ;
@@ -131,6 +149,9 @@ public class Parser extends ASTVisitor {
         level-- ;
 
         match(';') ;
+        declaredArrays.put(n.id.id, metaData) ;
+
+        System.out.println("Leaving DeclarationNode");
     }
 
     // type--> basic | ArrayTypeNode
@@ -143,12 +164,22 @@ public class Parser extends ASTVisitor {
             n.basic = Type.Int ;
         else if (look.toString().equals("float"))
             n.basic = Type.Float ;
-        
+        else if (look.toString().equals("bool"))
+            n.basic = Type.Bool ;
+        else if (look.toString().equals("char"))
+            n.basic = Type.Char ;
+        else {
+            System.out.println("Missing or unnown type: " + look.toString()) ;
+            System.exit(-1) ;
+        }
+            
+        n.metaData.type = n.basic ;
         match(Tag.BASIC) ;
 
         if (look.toString().equals("[")) {
-
-            n.array = new ArrayTypeNode() ;
+            n.metaData.isArray = true ;
+            n.metaData.arrayDimentions++ ;
+            n.array = new ArrayTypeNode(n.metaData) ;
             level++ ;
             n.array.accept(this) ;
             level-- ;
@@ -184,7 +215,8 @@ public class Parser extends ASTVisitor {
         match(']') ;
 
         if (look.toString().equals("[")) {
-            n.type = new ArrayTypeNode() ;
+            n.metaData.arrayDimentions++ ;
+            n.type = new ArrayTypeNode(n.metaData) ;
             level++ ;
             n.type.accept(this) ;
             level-- ;
@@ -200,8 +232,8 @@ public class Parser extends ASTVisitor {
     ///////////////////////////////
 
     public void visit(Statements n) {
-        for (int i = 0; i < level; i++) System.out.print(indent) ;
-        System.out.println("Statements[---");
+        // for (int i = 0; i < level; i++) System.out.print(indent) ;
+        // System.out.println("Statements[---");
         //If it's not the end bracket, then its another assignemt
 
         n.stmt = stmt() ;
@@ -211,10 +243,12 @@ public class Parser extends ASTVisitor {
                 level++ ;
                 n.stmts.accept(this) ;
                 level-- ;
+                // for (int i = 0; i < level; i++) System.out.print(indent) ;
+                // System.out.println("Statements---]");
             }
         else {
-                for (int i = 0; i < level; i++) System.out.print(indent) ;
-                System.out.println("Statements---]");
+                // for (int i = 0; i < level; i++) System.out.print(indent) ;
+                // System.out.println("Statements---]");
             }
     }
 
@@ -238,6 +272,7 @@ public class Parser extends ASTVisitor {
                     ((WhileNode)tmp).accept(this) ;
                     level-- ;
                     break ;
+
                 case Tag.DO:
                     tmp = new DoNode() ;
                     level++ ;
@@ -251,13 +286,23 @@ public class Parser extends ASTVisitor {
                     ((IfNode)tmp).accept(this) ;
                     level-- ;
                     break;
+
                 case '{': //block
-                    System.out.println("Going into {} block.");
+                    //System.out.println("Going into {} block.");
                     tmp = new BlockStatementNode() ;
                     level++ ;
                     ((BlockStatementNode)tmp).accept(this) ;
                     level-- ;
-                    System.out.println("Leaving {} block");
+                    //System.out.println("Leaving {} block");
+                    break ;
+                
+                case Tag.BREAK:
+                    
+                    match(Tag.BREAK);
+                    for (int i = 0; i < level; i++) System.out.print(indent) ;
+                    System.out.println("Break");
+                    match(';') ;
+                    
                     break ;
 
                 default:
@@ -277,7 +322,7 @@ public class Parser extends ASTVisitor {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("AssignmentNode");
 
-        n.left = new IdentifierNode() ;        
+        n.left = new Locations() ;        
         level++ ;
         n.left.accept(this) ;
         level-- ;
@@ -287,12 +332,11 @@ public class Parser extends ASTVisitor {
         System.out.println("operator: =") ;
 
         Node rhs_assign = null ;
-
         if (look.tag == Tag.ID) {
 
-            rhs_assign = new IdentifierNode() ;
+            rhs_assign = new Locations() ;
             level++ ;
-            ((IdentifierNode)rhs_assign).accept(this) ;
+            ((Locations)rhs_assign).accept(this) ;
             level-- ;
         } 
         
@@ -350,9 +394,9 @@ public class Parser extends ASTVisitor {
         //Start of bool
         Node rhs_assign = null ;
         if (look.tag == Tag.ID) {
-            rhs_assign = new IdentifierNode() ;
+            rhs_assign = new Locations() ;
             level++ ;
-            ((IdentifierNode)rhs_assign).accept(this) ;
+            ((Locations)rhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.NUM) {
@@ -415,15 +459,17 @@ public class Parser extends ASTVisitor {
         level-- ;
 
         match(Tag.WHILE) ;
+        for (int i = 0; i < level; i++) System.out.print(indent) ;
+        System.out.println("WhileForDo");
         //System.out.println("Moving past DO While");
         match('(') ;
 
         //Start of bool
         Node lhs_assign = null ;
         if (look.tag == Tag.ID) {
-            lhs_assign = new IdentifierNode() ;
+            lhs_assign = new Locations() ;
             level++ ;
-            ((IdentifierNode)lhs_assign).accept(this) ;
+            ((Locations)lhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.NUM) {
@@ -478,9 +524,9 @@ public class Parser extends ASTVisitor {
         //Start of bool
         Node lhs_assign = null ;
         if (look.tag == Tag.ID) {
-            lhs_assign = new IdentifierNode() ;
+            lhs_assign = new Locations() ;
             level++ ;
-            ((IdentifierNode)lhs_assign).accept(this) ;
+            ((Locations)lhs_assign).accept(this) ;
             level-- ;
         }
         else if (look.tag == Tag.NUM) {
@@ -514,7 +560,7 @@ public class Parser extends ASTVisitor {
             n.left = (BinExprNode) parseBinExprNode( lhs_assign, 0) ;
             level-- ;
 
-            System.out.println("**** Root Node operator: " + ((BinExprNode)n.right).op) ;
+            System.out.println("**** Root Node operator: " + ((BinExprNode)n.left).op) ;
         }
         //move past and finnish )
         match(')') ;
@@ -566,14 +612,14 @@ public class Parser extends ASTVisitor {
             case '+':
             case '-':
                 return 11 ;     //additive
-            // case '<':
-            // case '>':
-            // case '<=':
-            // case '>=':
-            //      return 9 ;  //relational
-            // case '==':
-            // case '!=':
-            //      return 8 ;  //equality
+            case '<':
+            case '>':
+            case Tag.LE:
+            case Tag.GE:
+                  return 9 ;  //relational
+            case Tag.EQ:
+            case Tag.NE:
+                  return 8 ;  //equality
             default:
                 return -1 ; // ';'
         }
@@ -592,6 +638,7 @@ public class Parser extends ASTVisitor {
         // Otherwise, create a new BinExprNode for current lhs and rhs. 
         while ( getPrecedence(look.tag) >= precedence) {
             Token token_op = look ;
+            //System.out.println("Seeing" + look.toString());
             int op = getPrecedence(look.tag) ;
             move() ;
             for (int i = 0; i < level; i++) System.out.print(indent) ;
@@ -674,7 +721,80 @@ public class Parser extends ASTVisitor {
         for (int i = 0; i < level; i++ ) System.out.print(indent) ;
         n.printNode() ;
     }
+    
+    //
+    public void visit(Locations n) {
+        
+        for (int i = 0; i < level; i++) System.out.print(indent) ;        //N
+        System.out.println("Locations");
+
+        level++ ;
+        n.left = new IdentifierNode() ;
+        n.left.accept(this) ;
+        level-- ;
+
+        if (look.tag == '[') {
+            level++ ;
+            n.right = new LocationNode() ;
+            n.right.accept(this) ;
+            level-- ;
+        }
+
+    }
+
     // loc --> loc[bool] | id
+    public void visit(LocationNode n) {
+
+        for (int i = 0; i < level; i++) System.out.print(indent) ;        //N
+        System.out.println("LocationNode");
+
+        match('[') ;
+
+        Node rhs_assign = null ;
+        if (look.tag == Tag.ID) {
+            rhs_assign = new IdentifierNode() ;
+            level++ ;
+            ((IdentifierNode)rhs_assign).accept(this) ;
+            level-- ;
+        } 
+        else if (look.tag == Tag.NUM) {
+            rhs_assign = new NumNode() ;
+            level++ ;
+            ((NumNode)rhs_assign).accept(this) ;
+            level-- ;
+        }
+        else if (look.tag == Tag.REAL) {
+            rhs_assign = new RealNode() ;
+            level++ ;
+            ((RealNode)rhs_assign).accept(this) ;
+            level-- ;
+        }
+
+        if (look.tag == ']') {// e.g. a = 19 ;
+            
+            n.left = rhs_assign ;
+        }
+        else { // e.g. b = a + b * c ;
+            // This is the start of the precedence climbing method.
+            for (int i = 0; i < level; i++) System.out.print(indent) ;
+            System.out.println("operator: " + look) ;
+            level++ ;
+            // Build AST for binary expressions with operator precedence
+            n.left = (BinExprNode) parseBinExprNode( rhs_assign, 0) ;
+            level-- ;
+            System.out.println("**** Root Node operator: " + ((BinExprNode)n.left).op) ;
+        }
+        match(']') ;
+
+        if (look.tag == '[') {
+            level++ ;
+            n.right = new LocationNode() ;
+            n.right.accept(this) ;
+            level-- ;
+        }
+
+    }
+
     public void visit(IdentifierNode n) {
 
         n.id = look.toString() ;
@@ -683,9 +803,13 @@ public class Parser extends ASTVisitor {
 
         for (int i = 0; i < level; i++ ) System.out.print(indent) ;
         n.printNode() ;
+        IdentifierDescriptors metaCheck = (IdentifierDescriptors)declaredArrays.get(n.id) ;
+        if (metaCheck != null && printMetaData) {
+            metaCheck.printMeta();
+        }
         //System.out.println("IdentifierNode: " + n.id) ;
         //System.out.println("look in IdentifierNode: " + look) ;
-        
+
     }
     
 }

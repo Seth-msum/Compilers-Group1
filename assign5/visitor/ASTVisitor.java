@@ -167,6 +167,31 @@ public class ASTVisitor {
         //     n.right.accept(this) ;
     }
 
+    public void visit(Locations n) {
+
+        n.left.accept(this) ;
+        if (n.right != null) {
+            n.right.accept(this) ;
+        }
+    }
+
+    public void visit(LocationNode n) {
+        if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
+        else if (n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this) ;
+        else if (n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this) ;
+        else if (n.left instanceof BoolNode)
+            ((BoolNode)n.left).accept(this) ;
+        else 
+            ((BinExprNode)n.left).accept(this) ;
+        
+        if (n.right != null) {
+            n.right.accept(this) ;
+        }
+    }
+
     public void visit (IdentifierNode n) {
 
     }
@@ -185,5 +210,6 @@ public class ASTVisitor {
 
     public void visit (Node n) {
         System.out.println("There was a mess up!");
+        System.exit(-1) ;
     }
 }
