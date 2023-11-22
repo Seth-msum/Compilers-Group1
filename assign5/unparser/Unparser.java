@@ -86,6 +86,10 @@ public class Unparser extends ASTVisitor{
 
     public void visit (Declarations n) {
 
+        //At first this might seem missleading,
+        //but what whill happen is that at the end of a
+        //declaration, an empty declarations will be left 
+        //attached to it.
         if (n.decls != null) {
 
             n.decl.accept(this) ;
@@ -143,23 +147,24 @@ public class Unparser extends ASTVisitor{
         }
     }
 
+    //this might not technically be needed.
     public void visit (StatementNode n) {
         //System.out.println("Got To StatemtnNode");
         //print(n.stmt.getClass().getSimpleName()) ;
-        indentUp() ;
-        if (n.stmt instanceof AssignmentNode)
-            ((AssignmentNode)n.stmt).accept(this) ;
-        else if (n.stmt instanceof WhileNode)
-            ((WhileNode)n.stmt).accept(this) ;
-        else if (n.stmt instanceof DoNode) 
-            ((DoNode)n.stmt).accept(this) ;
-        else if (n.stmt instanceof IfNode)
-            ((IfNode)n.stmt).accept(this) ;
-        else if (n.stmt instanceof BreakNode) {
-            printIndent() ;
-            println("break ;");
-        }
-        indentDown() ;
+        // indentUp() ;
+        // if (n.stmt instanceof AssignmentNode)
+        //     ((AssignmentNode)n.stmt).accept(this) ;
+        // else if (n.stmt instanceof WhileNode)
+        //     ((WhileNode)n.stmt).accept(this) ;
+        // else if (n.stmt instanceof DoNode) 
+        //     ((DoNode)n.stmt).accept(this) ;
+        // else if (n.stmt instanceof IfNode)
+        //     ((IfNode)n.stmt).accept(this) ;
+        // else if (n.stmt instanceof BreakNode) {
+        //     printIndent() ;
+        //     println("break ;");
+        // }
+        // indentDown() ;
     }
 
     public void visit(AssignmentNode n) {
@@ -276,6 +281,8 @@ public class Unparser extends ASTVisitor{
 
         if(n.left instanceof Locations)
             ((Locations)n.left).accept(this) ;
+        else if (n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this) ;
         else if (n.left instanceof NumNode)
             ((NumNode)n.left).accept(this) ;
         else if (n.left instanceof RealNode)
