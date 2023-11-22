@@ -623,8 +623,10 @@ public class Parser extends ASTVisitor {
             case Tag.EQ:
             case Tag.NE:
                   return 8 ;  //equality
+            case ';':
+                return -1 ;
             default:
-                return -1 ; // ';'
+                return -2 ; // ';'
         }
     }
 
@@ -639,6 +641,7 @@ public class Parser extends ASTVisitor {
         // the previous, then keep traversing down to create a new
         // BinExprNode for binary expressions with higher precedence
         // Otherwise, create a new BinExprNode for current lhs and rhs. 
+        //System.out.println(getPrecedence(look.tag));
         while ( getPrecedence(look.tag) >= precedence) {
             Token token_op = look ;
             //System.out.println("Seeing" + look.toString());
@@ -651,9 +654,9 @@ public class Parser extends ASTVisitor {
             //     System.out.println("**** IdentifierNode") ;
             Node rhs = null ;
             if (look.tag == Tag.ID) {
-                rhs = new IdentifierNode() ;
+                rhs = new Locations() ;
                 level++ ;
-                ((IdentifierNode)rhs).accept(this) ;
+                ((Locations)rhs).accept(this) ;
                 level-- ;
             }
             else if (look.tag == Tag.NUM) {
@@ -676,12 +679,15 @@ public class Parser extends ASTVisitor {
             // System.out.println("next_op = " + getPrecedence(look.tag)) ;
             // whenever the next op's precedence is higher than that
             // of the current operator, keep recursively calling itself.
+            System.out.println();
             while ( getPrecedence(look.tag) > op ) {
                 rhs = parseBinExprNode( rhs, getPrecedence(look.tag) ) ;
             }
             lhs = new BinExprNode(token_op, lhs, rhs);
+            System.out.println(lhs.getClass().getSimpleName());
             // System.out.println("**** Created BinExprNode with op " + token_op) ;
         }
+        
         return lhs ;
     }
 
@@ -755,9 +761,9 @@ public class Parser extends ASTVisitor {
 
         Node rhs_assign = null ;
         if (look.tag == Tag.ID) {
-            rhs_assign = new IdentifierNode() ;
+            rhs_assign = new Locations() ;
             level++ ;
-            ((IdentifierNode)rhs_assign).accept(this) ;
+            ((Locations)rhs_assign).accept(this) ;
             level-- ;
         } 
         else if (look.tag == Tag.NUM) {
@@ -783,6 +789,8 @@ public class Parser extends ASTVisitor {
             System.out.println("operator: " + look) ;
             level++ ;
             // Build AST for binary expressions with operator precedence
+            //System.out.println((char)look.tag);
+            //System.out.println(n.left.getClass().getSimpleName());
             n.left = (BinExprNode) parseBinExprNode( rhs_assign, 0) ;
             level-- ;
             System.out.println("**** Root Node operator: " + ((BinExprNode)n.left).op) ;
