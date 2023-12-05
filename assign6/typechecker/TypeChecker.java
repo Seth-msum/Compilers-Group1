@@ -80,11 +80,15 @@ public class TypeChecker extends ASTVisitor {
     //     print(s) ;
     // }
 
+    ////////////////////////////////////////
+    // Visit Methods
+    ////////////////////////////////////////
+
     public void visit(CompilationUnit n) {
 
-        System.out.println("****************************"); ////
-        System.out.println("TypeChecker starts ...");
-        System.out.println();
+        System.out.println("*****************************");
+        System.out.println("*    TypeChecker starts     *");
+        System.out.println("*****************************");
         System.out.println();
         System.out.println("CompilationUnit") ;
 
@@ -215,7 +219,6 @@ public class TypeChecker extends ASTVisitor {
     public void visit(ArrayDimsNode n) {
 
         System.out.println("ArrayDimsNode") ;
-        
 
         n.size.accept(this) ;
 

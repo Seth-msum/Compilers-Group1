@@ -72,9 +72,10 @@ public class TreePrinter extends ASTVisitor {
 
     public void visit(CompilationUnit n) {
 
-        System.out.println(); ////
-        System.out.println("Tree Printer starts ...");
         System.out.println();
+        System.out.println("*****************************");
+        System.out.println("*       Tree Printer        *");
+        System.out.println("*****************************");
         System.out.println();
         System.out.println("CompilationUnit") ;
 
@@ -183,6 +184,13 @@ public class TreePrinter extends ASTVisitor {
     //     //     System.out.println("The statements node's stmts is empty.");
     // }
 
+    public void visit (Statements n) {
+        if(n.stmts != null){
+            n.stmt.accept(this);
+            n.stmts.accept(this);
+        }
+    }
+
     public void visit(ParenthesesNode n) {
 
         printDotDotDot() ;
@@ -234,7 +242,7 @@ public class TreePrinter extends ASTVisitor {
     public void visit (DoWhileStatementNode n) {
 
         printDotDotDot() ;
-        System.out.println("WhileStatementNode") ;
+        System.out.println("DoWhileStatementNode") ;
 
         indentUp() ;
         n.stmt.accept(this) ;
@@ -330,6 +338,7 @@ public class TreePrinter extends ASTVisitor {
         System.out.println("BinExprNode: " + n.op) ; 
 
         indentUp() ;
+
         if (n.left instanceof ParenthesesNode)
             ((ParenthesesNode)n.left).accept(this) ;
         else if(n.left instanceof IdentifierNode)
@@ -343,7 +352,7 @@ public class TreePrinter extends ASTVisitor {
         else
             ((BinExprNode)n.left).accept(this) ;
 
-        if (n.right != null) {
+        if (n.op != null) {
 
             //System.out.println("&&& n.right in BinExprNode: " + n.right) ;
             //n.right.accept(this) ;
@@ -374,6 +383,7 @@ public class TreePrinter extends ASTVisitor {
         System.out.println("IdentifierNode: " + n.id);
         //print("" + n.id) ;
         // println(" ;") ;
+        n.printNode();
     }
 
     public void visit(NumNode n) {
@@ -384,6 +394,7 @@ public class TreePrinter extends ASTVisitor {
         System.out.println("NumNode: " + n.value);
         //print("" + n.value) ;
         // println(" ;") ;
+        n.printNode();
     }
 
     public void visit(RealNode n) {
@@ -391,5 +402,6 @@ public class TreePrinter extends ASTVisitor {
         printDotDotDot();
         System.out.println("RealNode: " + n.value);
         //print("" + n.value) ;
+        n.printNode();
     }
 }

@@ -20,6 +20,9 @@ public class Parser extends ASTVisitor {
     public BlockStatementNode   enclosingBlock = null ; 
     public          boolean eclosingExample = true ;
 
+    int             level       = 0 ;
+    String          indent      = "..." ;
+
     public Parser (Lexer lexer) {
         this.lexer = lexer ;
         cu = new CompilationUnit() ;
@@ -31,6 +34,10 @@ public class Parser extends ASTVisitor {
         move() ;
         visit(cu) ;
     }
+
+    ////////////////////////////////////////
+    //  Utility mothods
+    ////////////////////////////////////////
 
     void move() {
         try { look = lexer.scan() ; }
@@ -59,19 +66,6 @@ public class Parser extends ASTVisitor {
             System.exit(-1) ;
         }
     }
-    void match (int t, String neatError) {
-        try {
-            if (look.tag == t) {
-                move() ;
-            }
-            else
-                error("or line " + (lexer.line-1) + ": " + neatError + "\""+(char)t + "\"") ;
-        }
-        catch (Error e) {
-            System.out.println("Unnown error in neat match");
-            System.exit(-1) ;
-        }
-    }
 
     void print(String s){
         System.out.print(s);
@@ -85,6 +79,11 @@ public class Parser extends ASTVisitor {
         System.exit(n) ;
     }
 
+    ////////////////////////////////////////
+    // Visit Methods
+    ////////////////////////////////////////
+
+// look
     private boolean opt(int... tags) { //WTF is this syntax?
             // its variable length argument like Pythons *args
         
@@ -93,8 +92,7 @@ public class Parser extends ASTVisitor {
                 return true ;
         return false ;
     }
-    int             level       = 0 ;
-    String          indent      = "..." ;
+    
     public void visit(CompilationUnit n) {
         System.out.println("CompilationUnit") ;
         n.block = new BlockStatementNode(null) ;
@@ -105,9 +103,12 @@ public class Parser extends ASTVisitor {
     public void visit (BlockStatementNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("BlockStatmentNode");
-        match('{', "expected: ") ; //J
+
+        match('{') ;
+
         n.sTable = top ;
         top = new Env(top) ; 
+        
         enclosingBlock = n ;
         level++ ;
         while (opt(Tag.BASIC)) {
@@ -118,20 +119,22 @@ public class Parser extends ASTVisitor {
         level-- ;
         level++ ;
         while (opt(Tag.ID, Tag.IF, Tag.WHILE, Tag.DO, Tag.BREAK, Tag.BASIC)) {
-            n.stmts.add(parseStatementNode()) ;
+            n.stmts.add(parseStatementNode(n)) ;
         }
         level-- ;
-        match('}', "expected: ") ; //J
+        match('}') ;
         top = n.sTable ;
         enclosingBlock = n.parent ;
     }
     public void visit(DeclarationNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("DeclarationNode") ;
+
         n.type = new TypeNode() ;
         level++ ;
         n.type.accept(this) ;
         level-- ;
+
         n.id = new IdentifierNode() ;
         n.id.type = n.type.basic ;
         level++ ;
@@ -139,29 +142,25 @@ public class Parser extends ASTVisitor {
         level-- ;
 
         top.put(n.id.w, n.id) ;
+
         IdentifierNode tmp = (IdentifierNode)top.get(n.id.w) ;
         println("&&&&&& tmp.type: " + tmp.type) ;
         println("&&&&&& tmp.w: " + tmp.w) ;
-        match(';', "Declaration expected: ") ; //J
+
+        match(';') ; 
     }
     public void visit (TypeNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("TypeNode: " + look) ;
+
         if (look.toString().equals("int"))
             n.basic = Type.Int ;
         else if (look.toString().equals("float"))
             n.basic = Type.Float ;
-        else if (look.toString().equals("bool"))
-            n.basic = Type.Bool ;
-        else if (look.toString().equals("char"))
-            n.basic = Type.Char ;
-        else {
-            System.out.println("Missing or unnown type in TypeNode: " + look.toString()) ;
-            System.exit(-1) ;
-        }
-        //custom error for this might not be needed since all basics are accounted for.
-        match(Tag.BASIC, "expected int, float, bool, char, ID: ") ; //J
+        
+        match(Tag.BASIC) ;
 
+        //If look is "[", this type should be array type
         if (look.tag == '[') {
             n.array = new ArrayTypeNode() ;
             level++ ;
@@ -170,30 +169,49 @@ public class Parser extends ASTVisitor {
         }
     }
     public void visit(ArrayTypeNode n) {
+
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("ArrayTypeNode") ;
+        
         match('[') ;
-        if (look.tag == Tag.ID)
-            error("array declaraion using other variables is not supported yet") ;
-        if (look.tag != Tag.NUM)
-            error("ArrayTypeNode expected a Num inside the []") ;
+
         n.size = ((Num)look).value ;
+
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("Array Dimentsion: " + ((Num)look).value) ;
+
         match(Tag.NUM) ;
+
         match(']') ;
+
         if (look.tag == '[') {
+
             n.type = new ArrayTypeNode() ;
             level++ ;
             n.type.accept(this) ;
             level-- ;
         }
-
     }
-    public StatementNode parseStatementNode () {
+
+    public void visit (Statements n) {
+
+        if(look.tag != '}' && look.tag != Tag.EOF) {
+
+            level ++;
+            n.stmt = parseStatementNode(n.stmt);
+            level --;
+
+            n.stmts = new Statements();
+            level ++;
+            n.stmts.accept(this);
+            level --;
+        }
+    }
+
+    public StatementNode parseStatementNode (StatementNode stmt) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("**** parseStatementNode") ;
-        StatementNode stmt ;
+        
             switch (look.tag) {  
                 case Tag.ID:
                     stmt = new AssignmentNode() ;
@@ -215,67 +233,77 @@ public class Parser extends ASTVisitor {
                     stmt = new BreakStatementNode() ;
                     ((BreakStatementNode)stmt).accept(this) ;
                     return stmt ;
-                case Tag.BASIC:
-                    error("adding declarations after statements are not supported yet") ;
                 default:
                     error("Syntax error: Statement needed") ;
                     return null ;
             }   
     }
     public void visit (ParenthesesNode n) {
+
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("ParenthesesNode") ;
+
         match('(') ;
+        
         if (look.tag == '(') {
             n.expr = new ParenthesesNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
+
         } else if (look.tag == Tag.ID) {
             System.out.println("Testing Judahs Idea");
             n.expr = new IdentifierNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
+
             if (look.tag == '[') {
                 n.expr = parseArrayAccessNode((IdentifierNode)n.expr) ;
             }
         }
+
         else if (look.tag == Tag.NUM) {
             n.expr = new NumNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
         }
+
         else if (look.tag == Tag.REAL) {
             n.expr = new RealNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
         }
+
         else if (look.tag == Tag.TRUE) {
             n.expr = new TrueNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
         }
+
         else if (look.tag == Tag.FALSE) {
             n.expr = new FalseNode() ;
             level++ ;
             n.expr.accept(this) ;
             level-- ;
         }
+
         if (look.tag != ')') {
 
             level++ ;
             n.expr = parseBinExprNode(n.expr, 0) ;
             level-- ;
         }
+
         match(')') ;
     }
     public void visit (IfStatementNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("IfAtatementNode");
+        /* 
         if (eclosingExample) {
             IdentifierNode leftID = new IdentifierNode(new Word("i", Tag.ID), Type.Int) ;
             AssignmentNode newAssign1 = new AssignmentNode(leftID, new NumNode(new Num(2))) ;
@@ -293,26 +321,33 @@ public class Parser extends ASTVisitor {
                 System.out.println("********* enclosingBlock has this IfStatementNode") ;
             else
                 System.out.println("######### enclosingBlock doesn't have this IfStatementNode") ;
-        }     
+        }  */   
+
         match(Tag.IF) ;
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("operator: if");
+
         n.cond = new ParenthesesNode() ;
         level++ ;
         n.cond.accept(this) ;
         level-- ;
+
         if (look.tag == '{')  {
             n.stmt = new BlockStatementNode(enclosingBlock) ;
             level++ ;
             n.stmt.accept(this) ;
             level-- ;
+
         } else {
-            n.stmt = parseStatementNode() ;
+            n.stmt = parseStatementNode(n) ;
         }
+
         if (look.tag == Tag.ELSE) {
             match(Tag.ELSE);
+
             for (int i = 0; i < level; i++) System.out.print(indent) ;
             System.out.println("operator: else") ;
+
             if (look.tag == '{') {
                 n.else_stmt = new BlockStatementNode(enclosingBlock) ;
                 level++ ;
@@ -320,35 +355,41 @@ public class Parser extends ASTVisitor {
                 level-- ;
             }
             else {
-                n.else_stmt = parseStatementNode() ;
+                n.else_stmt = parseStatementNode(n) ;
             }
         }
     }
     public void visit(WhileStatementNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("WhileStatementNode");
+
         match(Tag.WHILE) ;
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("operator: while");
+
         n.cond = new ParenthesesNode() ;
         level++ ;
         n.cond.accept(this) ;
         level-- ;
+
         if (look.tag == '{') {
             n.stmt = new BlockStatementNode(enclosingBlock) ;
+            
             level++ ;
             n.stmt.accept(this) ;
             level-- ;
         } else {
-            n.stmt = parseStatementNode() ;
+            n.stmt = parseStatementNode(n) ;
         }
     }
     public void visit(DoWhileStatementNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("DoWhileStatementNode");
+
         match(Tag.DO);
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("operator: do");
+
         if (look.tag == '{') {
             n.stmt = new BlockStatementNode(enclosingBlock) ;
             level++ ;
@@ -356,25 +397,31 @@ public class Parser extends ASTVisitor {
             level-- ;
         }
         else {
-            n.stmt = parseStatementNode() ;
+            n.stmt = parseStatementNode(n) ;
         }
 
         match(Tag.WHILE) ;
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("operator: while");
+
         n.cond = new ParenthesesNode() ;
         level++ ;
         n.cond.accept(this) ;
         level-- ;
+
         match(';') ;
     }
     public void visit(ArrayAccessNode n) {
+
     }
     public void visit(ArrayDimsNode n ) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("ArrayDimsNode") ;
+
         match('[') ;
+
         ExprNode index = null ;
+
         if (look.tag == '(') {
             index = new ParenthesesNode() ;
             level++ ;
@@ -410,7 +457,8 @@ public class Parser extends ASTVisitor {
     ExprNode parseArrayAccessNode (IdentifierNode id) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("parseArrayAccessNode") ;
-        ArrayDimsNode index = new ArrayDimsNode() ;
+
+        ExprNode index = new ArrayDimsNode() ;
         level++ ;
         index.accept(this) ;
         level-- ;
@@ -419,22 +467,26 @@ public class Parser extends ASTVisitor {
     public void visit (AssignmentNode n) { // major changes
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("AssignmentNode");
+
         n.left = new IdentifierNode() ;        
         level++ ;
         n.left.accept(this) ;
         level-- ;
+
         IdentifierNode id =  (IdentifierNode)top.get(((IdentifierNode)n.left).w) ;
-        if (id == null)
-            error("Declaration error: " + ((IdentifierNode)n.left).w + " was not declared or declared properly") ;
         println("In Parser, AssignmentNode's left type: "+ id.type) ;
+
         ((IdentifierNode)n.left).type = id.type ;
+
         if (look.tag == '[') {
             n.left = parseArrayAccessNode((IdentifierNode)n.left) ;
         }
+
         match('=') ;
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("operator: =") ;
         ExprNode rhs_assign = null ;
+        
         if (look.tag == '(') {
             rhs_assign = new ParenthesesNode() ;
             level++ ;
@@ -465,7 +517,7 @@ public class Parser extends ASTVisitor {
         if (look.tag == ';') {
             n.right = rhs_assign ;
         }
-        else {
+        else if(isOperator(look.tag)){
             for (int i = 0; i < level; i++) System.out.print(indent) ;
             System.out.println("operator: " + look) ;
             level++ ;
@@ -475,6 +527,22 @@ public class Parser extends ASTVisitor {
         }
         match(';');
     }
+
+    boolean isOperator(int op) {
+
+        switch(op) {
+            case '*': case '/': case '%':
+            case '+': case '-':
+            case '<': case '>':
+            case Tag.LE: case Tag.GE:
+            case Tag.EQ: case Tag.NE: return true;
+
+            default: 
+                return false;
+        }
+    }
+
+
     public void visit(BreakStatementNode n) {
         for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println("BreakStatementNode: break") ;
@@ -524,6 +592,8 @@ public class Parser extends ASTVisitor {
         n.right = binary.right ;
         level -- ;
     }
+
+
     /*
         < Operator Precedence >
         Operators are listed top to bottom in ascending precedence.
@@ -543,36 +613,28 @@ public class Parser extends ASTVisitor {
         13. unary ++expr, --expr, +expr, -expr
         14. postfix expr++, expr--
      */
+
+
     int getPrecedence (int op) {
         switch ( op ) {
-            case '*':           
-            case '/':
-            case '%':
-                return 12 ;     //multiplicative
-            case '+':
-            case '-':
-                return 11 ;     //additive
-            case '<':
-            case '>':
-            case Tag.LE:
-            case Tag.GE:
-                  return 9 ;  //relational
-            case Tag.EQ:
-            case Tag.NE:
-                  return 8 ;  //equality
-            case ';':
-                return -1 ;
-            default:
-                return -2 ; // This is a test on my end: Judah
+            case '*': case '/': case '%': return 12 ;     //multiplicative
+            case '+': case '-':           return 11 ;     //additive
+            case '<': case '>':                           //relational
+            case Tag.LE: case Tag.GE:     return 9 ;      
+            case Tag.EQ: case Tag.NE:     return 8 ;      //equality
+            default: return -1 ;
         }
     }
     ExprNode parseBinExprNode( ExprNode lhs, int precedence) {
         while ( getPrecedence(look.tag) >= precedence) {
             Token token_op = look ;
             int op = getPrecedence(look.tag) ;
+
             move() ;
+
             for (int i = 0; i < level; i++) System.out.print(indent) ;
             ExprNode rhs = null ;
+            
             if (look.tag == '(') {
                 rhs = new ParenthesesNode() ;
                 level++ ;
