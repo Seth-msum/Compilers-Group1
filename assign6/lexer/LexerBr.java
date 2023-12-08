@@ -10,8 +10,10 @@ public class Lexer {
 
     private FileInputStream in ;
     private BufferedInputStream bin ;
-    //public  StringBuffer              phrase = new StringBuffer(1024 );
 
+    // private boolean negflag = false; // use to force 4-5 to return subtraction operator
+    private boolean negnum  = false; // used to make number negative value.
+    private char prepeek ;
     private Hashtable<String, Word> words = new Hashtable<String, Word>() ;
 
     public Lexer() {
@@ -47,6 +49,7 @@ public class Lexer {
         }   
     }
     void readch() throws IOException {
+        prepeek = peek ;
         peek = (char) bin.read() ;
     }
 
@@ -61,8 +64,18 @@ public class Lexer {
     }
 
     public Token scan() throws IOException {
+
         tokenCount++ ;
-        for ( ; ; readch() ) {
+
+        // this removes cases where there is no negative immediatly after number
+        // if(negflag)
+        //     if(peek != '-')
+        //         negflag = false ;
+
+
+
+        for ( ; ; readch() ) { // This loads peek for scan with non white character
+
             if(peek == ' ' || peek == '\t')
                 continue ;
             else if (peek == 13 || peek == 10) //carriage feed vs line feed
@@ -71,6 +84,7 @@ public class Lexer {
                 break ;
         }
 
+        
         switch( peek ) {
 
         case '&':
@@ -102,17 +116,34 @@ public class Lexer {
             if(readch('=') )
                 return Word.ge ;
             else return new Token('>') ;
+
         case '{':
-            peek = ' ' ;
-            return Word.bst ;
+                peek = ' ' ;
+                return Word.bst ;
 
         case '}':
-            peek = ' ' ;
-            return Word.bet ;
+                peek = ' ' ;
+                return Word.bet ;
         case '-':
-            peek = ' ' ;
-            return Word.minus ;
-        
+            if (prepeek == ' ') {
+                readch();
+                if(Character.isDigit(peek))
+                    negnum = true ;
+                else
+                
+            }
+                
+                return Word.minus ;
+            // if(negflag)// its imediatly after number so it had to be operator.
+            //     return Word.minus ;
+            // if(readch(' ')) //There is space so its an operator.
+            //     return Word.minus ;
+            // else {
+            //     if(Character.isDigit(peek)) //next to number so it makes it negative.
+            //         negnum = true ;
+            //     else
+            //         return Word.minus ; //not next to number so its an operator
+            // }
         }
 
         if ( Character.isDigit(peek)) {
@@ -124,8 +155,17 @@ public class Lexer {
 
             //System.out.println("v: " + v) ;
 
-            if(peek != '.')
+            if(peek != '.') {
+                // if(negnum) {
+                //     negnum = false ;
+                //     v = v * -1 ;
+                // }
+                // if (readch('-')) { //if a negative follows, set negflag.
+                    //negflag = true ; // tells the scan() to first check for '-'
+                // }
                 return new Num(v) ;
+            }
+               
 
             float x = v ; float d = 10 ;
 
@@ -136,6 +176,13 @@ public class Lexer {
 
                 x = x + Character.digit(peek, 10) / d; d = d*10 ;
             }
+            // if(negnum) {
+            //     negnum = false ;
+            //     x = x * -1 ;
+            // }
+            //if (readch('-')) { //if a negative follows, set negflag.
+            //negflag = true ;
+            //}
             return new Real(x) ;
         }
         if (Character.isLetter(peek) ) {
@@ -146,6 +193,7 @@ public class Lexer {
             } while ( Character.isLetterOrDigit(peek)) ;
             String s = b.toString() ;
             Word w = (Word)words.get(s) ;
+            //negflag = true ;
             if (w != null )
                 return w ;
             w = new Word(s, Tag.ID) ;

@@ -1,5 +1,8 @@
 package assign6.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import assign6.lexer.*;
 import assign6.visitor.*;
 
@@ -8,8 +11,11 @@ import assign6.visitor.*;
 public class TypeNode extends Node{
     
     public Type basic ;                 // basic type (e.g Type.Float)
-    public ArrayTypeNode array = null ; // By default, array type is null
+    //public ArrayTypeNode array = null ; // By default, array type is null
     //public IdentifierDescriptors metaData ;
+
+    public List<ArrayTypeNode>      dimensions = new ArrayList<ArrayTypeNode>() ;
+
     public TypeNode () {
 
     }
@@ -19,10 +25,10 @@ public class TypeNode extends Node{
     //     this.metaData = metaData ;
     // }
 
-    public TypeNode (Type basic, ArrayTypeNode array) {
+    public TypeNode (Type basic) {
 
         this.basic = basic ;
-        this.array = array ;
+        //this.array = array ;
     }
 
     public void accept(ASTVisitor v) {

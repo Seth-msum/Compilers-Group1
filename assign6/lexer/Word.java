@@ -22,6 +22,8 @@ public class Word extends Token {
     public static final Word gt    = new Word(">", Tag.GT ) ;
     public static final Word not   = new Word("!", Tag.NOT );
 
+    public static final Word bst   = new Word("{", Tag.BST) ;
+    public static final Word bet   = new Word("}", Tag.BET) ;
 
 
 

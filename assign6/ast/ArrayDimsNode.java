@@ -1,20 +1,24 @@
 package assign6.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import assign6.visitor.*;
 
 public class ArrayDimsNode extends ExprNode {
     
     public ExprNode         size ;
-    public ArrayDimsNode    dim ;
+    
 
+    
     public ArrayDimsNode () {
 
     }
 
-    public ArrayDimsNode (ExprNode size, ArrayDimsNode dim) {
+    public ArrayDimsNode (ExprNode size) {
 
         this.size = size ;
-        this.dim = dim ;
+        
     }
 
     public void accept(ASTVisitor v) {

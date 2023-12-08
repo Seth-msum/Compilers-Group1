@@ -31,5 +31,9 @@ public class Tag {
 
     // End of File
     public final static int EOF     = 279 ;
+
+    //{ and }
+    public final static int BST     = 280 ;
+    public final static int BET     = 281 ;
     
 }
