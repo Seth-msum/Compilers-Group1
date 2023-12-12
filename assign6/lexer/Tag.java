@@ -23,15 +23,12 @@ public class Tag {
     public final static int TEMP    = 273 ;
     public final static int TRUE    = 274 ;
     public final static int WHILE   = 275 ;
-
     //Lab 09
     public final static int LT      = 276 ;
     public final static int GT      = 277 ;
     public final static int NOT     = 278 ;
-
     // End of File
     public final static int EOF     = 279 ;
-
     //{ and }
     public final static int BST     = 280 ;
     public final static int BET     = 281 ;

@@ -1,23 +1,8 @@
 {
-    int i ; 
-    int j ; 
-    float v ; 
-    float x ; 
-    bool gg ;
-    float[100] a ;
-    char  [40]  [33] words ;
-    while( true ) {
-        do i = i+1 ; while( a[i+3] < v) ;
-        do j = j-1 ; while( a[j] > v) ;
-        if( i >= j ) break;
-        x = a[i] ; a[i] = a[j] ; a[j] = x ;
-        if (5<b) break; else x = a[i];
-    }
-    {
-        int i ;
-        i = 4 ;
-    }
-    if ( a[i] < 5) {
-        x = a[i] ;
-    }
-}
+
+a = 19 ;
+  a = 2 + 3 - 4 - 5 ;
+ b = 6 + 7 + 8 - 9 ;
+ c = d - e;
+     }
+

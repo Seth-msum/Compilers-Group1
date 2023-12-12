@@ -1,37 +1,30 @@
 package assign6.ast;
 
-import assign6.lexer.*;
 import assign6.visitor.*;
+import assign6.lexer.*;
 
 public class IdentifierNode extends ExprNode {
 
-    public String id ;
-    public Word w ;     //Do I need w?
-    public Type type ;
+    public String id;
+    public Word w;
 
-    public IdentifierNode () {
+    public IdentifierNode() {
 
     }
 
-    public IdentifierNode (Word w) {
+    public IdentifierNode(Word w) {
 
-        this.id = w.lexeme ;
-        this.w = w ;
-    }
-    public IdentifierNode (Word w, Type type) {
-        this.id = w.lexeme ;
-        this.w = w ;
-        this.type = type ;
+    this.id = w.lexeme;
+    this.w = w;
     }
 
     public void accept(ASTVisitor v) {
 
-        v.visit(this) ;
+        v.visit(this);
     }
 
     public void printNode() {
 
-        System.out.println("IdentifierNode: " + id) ;
+        System.out.println("IdentifierNode: " + id);
     }
-    
 }

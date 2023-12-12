@@ -1,407 +1,379 @@
 package assign6.unparser;
 
-
-import assign6.ast.*;
-import assign6.lexer.*;
 import assign6.parser.*;
 import assign6.visitor.*;
-
+import assign6.ast.*;
+import assign6.lexer.*;
 
 public class TreePrinter extends ASTVisitor {
     
-    public Parser parser = null ;
-    public CompilationUnit cu = null ;
+    public Parser parser = null;
 
-
-    int level = 0 ;
-    String indent = "..." ;
+    int level = 0;
+    String indent = "...";
 
     public TreePrinter (Parser parser) {
 
-        this.parser = parser ;
-        cu = parser.cu ;
-        visit(cu) ;
+        this.parser = parser;
+        visit(this.parser.cu);
     }
 
-    public TreePrinter () {
+    public TreePrinter() {
 
-        visit(this.parser.cu) ;
+        visit(this.parser.cu);
     }
 
-    ////////////////////////
+    ///////////////////////////////////////
     // Utility Methods
-    ////////////////////////
+    ///////////////////////////////////////
 
-    void print(String s){
+    void print(String s) {
+
         System.out.print(s);
     }
 
-    void println(String s){
+    void println(String s) {
+
         System.out.println(s);
     }
 
-    void printSpace(){
+    void printSpace() {
+
         System.out.print(" ");
     }
 
     int indent_level = 0;
 
-    void indentUp(){
-        indent_level++;
+    void indentUp() {
+
+        indent_level ++;
     }
 
-    void indentDown(){
-        indent_level--;
+    void indentDown() {
+
+        indent_level --;
     }
 
-    void printIndent(){
+    void printIndent() {
+
         String s = "";
-        for (int i=0; i<indent_level; i++){
+        for(int i=0; i<indent_level; i++) {
+
             s += "  ";
         }
+
         print(s);
     }
 
-    void printDotDotDot() { //New function of lab07
+    void printDotDotDot() {
 
-        String s = "" ;
-        for (int i = 0; i < indent_level; i++ )
-            s += "..." ;
-        print(s) ;
+        String s = "";
+        for(int i=0; i<indent_level; i++)
+            s += "...";
+
+        print(s);
     }
 
-    public void visit(CompilationUnit n) {
 
-        System.out.println();
-        System.out.println("*****************************");
-        System.out.println("*       Tree Printer        *");
-        System.out.println("*****************************");
-        System.out.println();
-        System.out.println("CompilationUnit") ;
+    ////////////////////////////////////////
+    // Visit Methods
+    ////////////////////////////////////////
 
-        indentUp() ;
+    public void visit (CompilationUnit n) {
+
+        System.out.println("*****************************");
+        System.out.println("*    Tree Printer starts    *");
+        System.out.println("*****************************");
+        System.out.println();
+        System.out.println("CompilationUnit");
+
+        indentUp();
         n.block.accept(this) ;
-        indentDown() ;
-
-        System.out.println("...Tree Printer ends.");
-        System.out.println();
+        indentDown();
     }
 
-    public void visit(BlockStatementNode n) {
+    public void visit (BlockStatementNode n) {
 
-        printDotDotDot() ;
-        System.out.println("BlockStatementNode") ;
-        //println("{") ;
+        printDotDotDot();
+        System.out.println("BlockStatementNode");
 
-        indentUp() ;
+        indentUp();
 
-        for (DeclarationNode decl : n.decls)
-            decl.accept(this) ;
+        n.decls.accept(this);
 
-        indentDown() ;
+        indentDown();
 
-        indentUp() ;
+        indentUp();
 
-        for (StatementNode stmt : n.stmts)
-            stmt.accept(this) ;
+        n.stmts.accept(this);
 
-        indentDown() ;
+        indentDown();
 
-        //println("}") ;
- 
     }
 
-    // public void visit (Declarations n) {
-    //     //These are of the same order so they do not need indentUp/Down
-    //     if (n.decls != null) {
-    //         // if(JudahsDeclCount == 0) {
-    //         //     printDotDotDot();
-    //         //     System.out.println("**Declarations --[--") ;
-    //         // }
-    //         // JudahsDeclCount++ ;
+    public void visit (Declarations n) {
 
-    //         n.decl.accept(this) ;
+        if (n.decls != null) {
 
-    //         n.decls.accept(this) ;
-    //         // JudahsDeclCount-- ;
-    //         // if(JudahsDeclCount == 0) {
-    //         //     printDotDotDot();
-    //         //     System.out.println("**Declarations --]-- ") ;
-    //         // }
-    //     }
-    // }
+            n.decl.accept(this);
 
-    public void visit(DeclarationNode n) {
-
-        printDotDotDot() ;
-        System.out.println("DeclarationNode") ;
-
-        indentUp() ;
-        n.type.accept(this) ;
-        indentDown() ;
-
-        indentUp() ;
-        n.id.accept(this) ;
-        indentDown() ;
+            n.decls.accept(this);
+        }
     }
 
-    public void visit(TypeNode n) {
+    public void visit (DeclarationNode n) {
 
-        printDotDotDot() ;
-        System.out.println("TypeNode: " + n.basic) ;
-        
+        printDotDotDot();
+        System.out.println("DeclarationNode");
+
+        indentUp();
+        n.type.accept(this);
+        indentDown();
+
+        indentUp();
+        n.id.accept(this);
+        indentDown();
+    }
+
+    public void visit (TypeNode n) {
+
+        printDotDotDot();
+        System.out.println("TypeNode: " + n.basic);
+
         if(n.array != null) {
 
-            indentUp() ;
-            n.array.accept(this) ;
-            indentDown() ;
+            indentUp();
+            n.array.accept(this);
+            indentDown();
         }
-    } 
+    }
 
     public void visit (ArrayTypeNode n) {
 
-        printDotDotDot() ;
-        System.out.println("ArrayTypeNode: " + n.size) ;
+        printDotDotDot();
+        System.out.println("ArrayTypeNode: " + n.size);
 
-        if (n.type != null) {
+        if(n.type != null) {
 
-            indentUp() ;
-            n.type.accept(this) ;
-            indentDown() ;
+            indentUp();
+            n.type.accept(this);
+            indentDown();
         }
     }
 
-    // public void visit(Statements n) {
-
-    //     if (n.stmts != null) {
-
-    //         n.stmt.accept(this) ;
-
-    //         n.stmts.accept(this) ;
-
-    //     }
-    //     // else
-    //     //     System.out.println("The statements node's stmts is empty.");
-    // }
-
     public void visit (Statements n) {
-        if(n.stmts != null){
+
+        if(n.stmts != null) {
+
             n.stmt.accept(this);
             n.stmts.accept(this);
         }
     }
 
-    public void visit(ParenthesesNode n) {
+    public void visit (ParenthesesNode n) {
 
-        printDotDotDot() ;
-        System.out.println("ParenthesesNode") ;
+        printDotDotDot();
+        System.out.println("ParenthesesNode");
 
-        indentUp() ;
-        n.expr.accept(this) ;
-        indentDown() ;
+        indentUp();
+        n.expr.accept(this);
+        indentDown();
+
     }
 
-    public void visit(IfStatementNode n) {
+    public void visit (IfStatementNode n) {
 
-        printDotDotDot() ;
-        System.out.println("IfStatementNode") ;
+        printDotDotDot();
+        System.out.println("IfStatementNode");
 
-        indentUp() ;
-        n.cond.accept(this) ;
-        indentDown() ;
+        indentUp();
+        n.cond.accept(this);
+        indentDown();
+        
+        indentUp();
+        n.stmt.accept(this);
+        indentDown();
 
-        indentUp() ;
-        n.stmt.accept(this) ;
-        indentDown() ;
+        if(n.else_stmt != null) {
 
-        if (n.else_stmt != null) {
+            printDotDotDot();
+            System.out.println("Else Clause");
 
-            printDotDotDot() ;
-            System.out.println("Else Clause") ;
-
-            indentUp() ;
-            n.else_stmt.accept(this) ;
-            indentDown() ;  
+            indentUp();
+            n.else_stmt.accept(this);
+            indentDown();
         }
     }
 
     public void visit (WhileStatementNode n) {
 
-        printDotDotDot() ;
-        System.out.println("WhileStatementNode") ;
+        printDotDotDot();
+        System.out.println("WhileStatementNode");
 
-        indentUp() ;
-        n.cond.accept(this) ;
-        indentDown() ;
-
-        indentUp() ;
-        n.stmt.accept(this) ;
-        indentDown() ;
+        indentUp();
+        n.cond.accept(this);
+        indentDown();
+        
+        indentUp();
+        n.stmt.accept(this);
+        indentDown();
+        
     }
 
     public void visit (DoWhileStatementNode n) {
 
-        printDotDotDot() ;
-        System.out.println("DoWhileStatementNode") ;
+        printDotDotDot();
+        System.out.println("DoWhileStatementNode");
 
-        indentUp() ;
-        n.stmt.accept(this) ;
-        indentDown() ;
-
-        indentUp() ;
-        n.cond.accept(this) ;
-        indentDown() ;
-    }
-
-    public void visit(ArrayAccessNode n) {
-        printDotDotDot() ;
-        System.out.println("ArrayAccessNode") ;
-
-        indentUp() ;
-        n.id.accept(this) ;
-        indentDown() ;
-
-        indentUp() ;
-        n.index.accept(this) ;
-        indentDown() ;
-    }
-
-    public void visit(ArrayDimsNode n) {
-
-        printDotDotDot() ;
-        System.out.println("ArrayDimsNode") ;
+        indentUp();
+        n.stmt.accept(this);
+        indentDown();
         
-        indentUp() ;
-        n.size.accept(this) ;
-        indentDown() ;
+        indentUp();
+        n.cond.accept(this);
+        indentDown();
+        
+    }
 
-        if (n.dim != null) {
+    public void visit (ArrayAccessNode n) {
 
-            indentUp() ;
-            n.dim.accept(this) ;
-            indentDown() ;
+        printDotDotDot();
+        System.out.println("ArrayAccessNode");
+
+        indentUp();
+        n.id.accept(this);
+        indentDown();
+        
+        indentUp();
+        n.index.accept(this);
+        indentDown();
+        
+    }
+
+    public void visit (ArrayDimsNode n) {
+
+        printDotDotDot();
+        System.out.println("ArrayDimsNode");
+
+        indentUp();
+        n.size.accept(this);
+        indentDown();
+        
+        if(n.dim != null) {
+
+            indentUp();
+            n.dim.accept(this);
+            indentDown();
         }
     }
 
-    public void visit(BreakStatementNode n) {
+    public void visit (BreakStatementNode n) {
 
-        printDotDotDot() ;
-        System.out.println("BreakStatementNode") ;
+        printDotDotDot();
+        System.out.println("BreakStatementNode");
     }
 
     public void visit (TrueNode n) {
 
-        printDotDotDot() ;
-        System.out.println("TrueNode") ;
+        printDotDotDot();
+        System.out.println("TrueNode");
     }
-    
-    public void visit(FalseNode n) {
 
-        printDotDotDot() ;
+    public void visit (FalseNode n) {
+
+        printDotDotDot();
         System.out.println("FalseNode");
     }
 
-    public void visit(AssignmentNode n) {
+    public void visit (AssignmentNode n) {
         
-        printDotDotDot() ;
-        System.out.println("AssignmentNode") ;
-        indentUp() ;
-        n.left.accept(this) ;
-        indentDown() ;
+        printDotDotDot();
+        System.out.println("AssignmentNode");
 
-        indentUp() ;
-        printDotDotDot() ;
-        System.out.println("Operator: = ");
-        indentDown() ;
+        indentUp();
+        n.left.accept(this);
+        indentDown();
 
-        indentUp() ;
-        if (n.right instanceof ParenthesesNode)
-            ((ParenthesesNode)n.right).accept(this) ;
-        else if (n.right instanceof IdentifierNode)
-            ((IdentifierNode)n.right).accept(this) ;
-        else if (n.right instanceof NumNode)
-            ((NumNode)n.right).accept(this) ;
-        else if (n.right instanceof RealNode)
-            ((RealNode)n.right).accept(this) ;
-        else if (n.right instanceof ArrayAccessNode)
-            ((ArrayAccessNode)n.right).accept(this) ;
-        else //BinExpr ???
-            ((BinExprNode)n.right).accept(this) ;
+        indentUp();
+        printDotDotDot();
+        println("operator: = ");
+        indentDown();
+        
+        indentUp();
 
-        indentDown() ;
-            //println(" ;") ;
+        if (n.right instanceof IdentifierNode)
+            ((IdentifierNode)n.right).accept(this);
+        else if(n.right instanceof NumNode)
+            ((NumNode)n.right).accept(this);
+        else if(n.right instanceof RealNode)
+            ((RealNode)n.right).accept(this);
+        else if(n.right instanceof ArrayAccessNode)
+            ((ArrayAccessNode)n.right).accept(this);
+        else {
+            ((BinExprNode)n.right).accept(this);
+        }
+
+        indentDown();
+
     }
 
-    public void visit(BinExprNode n) {
+    public void visit (BinExprNode n) {
 
-        printDotDotDot() ;
-        System.out.println("BinExprNode: " + n.op) ; 
+        printDotDotDot();
+        System.out.println("BinExprNode: " + n.op);
 
-        indentUp() ;
+        indentUp();
 
-        if (n.left instanceof ParenthesesNode)
-            ((ParenthesesNode)n.left).accept(this) ;
-        else if(n.left instanceof IdentifierNode)
-            ((IdentifierNode)n.left).accept(this) ;
-        else if (n.left instanceof NumNode)
-            ((NumNode)n.left).accept(this) ;
-        else if (n.left instanceof RealNode)
-            ((RealNode)n.left).accept(this) ;
-        else if (n.left instanceof ArrayAccessNode) 
-            ((ArrayAccessNode)n.left).accept(this) ;
+        if(n.left instanceof IdentifierNode)
+            ((IdentifierNode)n.left).accept(this);
+        else if(n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this);
+        else if(n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this);
+        else if(n.left instanceof ArrayAccessNode)
+            ((ArrayAccessNode)n.left).accept(this);
         else
-            ((BinExprNode)n.left).accept(this) ;
+            ((BinExprNode)n.left).accept(this);
 
-        if (n.op != null) {
+        if(n.op != null) {
 
-            //System.out.println("&&& n.right in BinExprNode: " + n.right) ;
-            //n.right.accept(this) ;
-            //if(getPrecedence(n.op) < getPrecedence(n))
-            
-            if (n.right instanceof IdentifierNode)
-                ((IdentifierNode)n.right).accept(this) ;
-            else if (n.right instanceof NumNode)
-                ((NumNode)n.right).accept(this) ;
-            else if (n.right instanceof RealNode)
-                ((RealNode)n.right).accept(this) ;
-            else if (n.right instanceof ArrayAccessNode)
-                ((ArrayAccessNode)n.right).accept(this) ;
+            if(n.right instanceof IdentifierNode)
+                ((IdentifierNode)n.right).accept(this);
+            else if(n.right instanceof NumNode)
+                ((NumNode)n.right).accept(this);
+            else if(n.right instanceof RealNode)
+                ((RealNode)n.right).accept(this);
+            else if(n.right instanceof ArrayAccessNode)
+            ((ArrayAccessNode)n.right).accept(this);
             else
-                ((BinExprNode)n.right).accept(this) ;    
+                ((BinExprNode)n.right).accept(this);
         } else {
 
-            // System.out.println("@@@ n.right == null in BinExprNode: " + n.right) ;
+            //System.out.println("@@@ n.right == null in BinExprNode: " + n.right);
         }
-        indentDown() ;
+
+        indentDown();
+    }
+
+    public void visit (IdentifierNode n) {
+
+        printDotDotDot();
+        //System.out.println("IdentifierNode: " + n.id);
+        n.printNode();
         
     }
 
-    public void visit(IdentifierNode n) {
+    public void visit (NumNode n) {
 
-        // printIndent() ;
         printDotDotDot();
-        System.out.println("IdentifierNode: " + n.id);
-        //print("" + n.id) ;
-        // println(" ;") ;
+        //System.out.println("NumNode: " + n.literal);
         n.printNode();
-    }
+    } 
 
-    public void visit(NumNode n) {
-
-
-        // printIndent() ;
-        printDotDotDot();
-        System.out.println("NumNode: " + n.value);
-        //print("" + n.value) ;
-        // println(" ;") ;
-        n.printNode();
-    }
-
-    public void visit(RealNode n) {
+    public void visit (RealNode n) {
 
         printDotDotDot();
-        System.out.println("RealNode: " + n.value);
-        //print("" + n.value) ;
+        //System.out.println("RealNode: " + n.value);
         n.printNode();
     }
 }

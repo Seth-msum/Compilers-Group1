@@ -1,31 +1,31 @@
 package assign6.ast;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import assign6.lexer.*;
 import assign6.visitor.*;
+import assign6.lexer.*;
 
-// Decl --> type id ;
+//////////////////////////////////////////
+//
+// Decl --> Type id;
+//
+//////////////////////////////////////////
 
 public class DeclarationNode extends Node {
+    
+    public TypeNode type;
+    public IdentifierNode id;
 
-    public TypeNode type ;
-    public IdentifierNode id ;
-
-    public DeclarationNode() {
+    public DeclarationNode () {
 
     }
 
-    public DeclarationNode (TypeNode type, IdentifierNode id) {
+    public DeclarationNode(TypeNode type, IdentifierNode id) {
 
-        this.type = type ;
-        this.id = id ;
+        this.type = type;
+        this.id = id;
     }
 
     public void accept(ASTVisitor v) {
 
-        v.visit(this) ;
+        v.visit(this);
     }
-    
 }

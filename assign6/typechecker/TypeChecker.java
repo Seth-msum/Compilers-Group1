@@ -1,84 +1,59 @@
 package assign6.typechecker;
 
-import assign6.ast.*;
-import assign6.lexer.*;
 import assign6.parser.*;
 import assign6.visitor.*;
-
+import assign6.ast.*;
+import assign6.lexer.*;
 
 public class TypeChecker extends ASTVisitor {
     
-    public Parser parser = null ;
+    public Parser parser = null;
+    public CompilationUnit cu = null;
 
-    int JudahsDeclCount = 0 ;
-
-    int level = 0 ;
-    String indent = "..." ;
-
-    int loopCount = 0 ;
-    boolean loopExist = false ;
+    int level = 0;
+    String indent = "...";
 
     public TypeChecker (Parser parser) {
 
-        this.parser = parser ;
-        visit(this.parser.cu) ;
+        this.parser = parser;
+        cu = parser.cu;
+        visit(cu);
     }
 
-    public TypeChecker () {
+    public TypeChecker() {
 
-        visit(this.parser.cu) ;
+        visit(this.parser.cu);
     }
 
-    ////////////////////////
+    ///////////////////////////////////////
     // Utility Methods
-    ////////////////////////
+    ///////////////////////////////////////
 
-    void error (String s) {
-        println(s) ;
-        exit(1) ;
+    void error(String s) {
+
+        println(s);
+        exit(1);
     }
 
     void exit(int n) {
-        System.exit(n) ;
-    }
 
-    void print(String s){
+        System.exit(n);
+    }
+    
+    void print(String s) {
+
         System.out.print(s);
     }
 
-    void println(String s){
+    void println(String s) {
+
         System.out.println(s);
     }
 
-    void printSpace(){
+    void printSpace() {
+
         System.out.print(" ");
     }
-
-    // int indent_level = 0;
-
-    // void indentUp(){
-    //     indent_level++;
-    // }
-
-    // void indentDown(){
-    //     indent_level--;
-    // }
-
-    // void printIndent(){
-    //     String s = "";
-    //     for (int i=0; i<indent_level; i++){
-    //         s += "  ";
-    //     }
-    //     print(s);
-    // }
-
-    // void printDotDotDot() { //New function of lab07
-
-    //     String s = "" ;
-    //     for (int i = 0; i < indent_level; i++ )
-    //         s += "..." ;
-    //     print(s) ;
-    // }
 
     ////////////////////////////////////////
     // Visit Methods
@@ -86,160 +61,137 @@ public class TypeChecker extends ASTVisitor {
 
     public void visit(CompilationUnit n) {
 
-        System.out.println("*****************************");
-        System.out.println("*    TypeChecker starts     *");
-        System.out.println("*****************************");
+        System.out.println("************************************");
+        System.out.println("*        TypeChecker Starts        *");
+        System.out.println("************************************");
         System.out.println();
-        System.out.println("CompilationUnit") ;
+        System.out.println("CompilationUnit");
 
-        n.block.accept(this) ;
-
-        System.out.println("...Tree Printer ends.");
-        System.out.println();
+        n.block.accept(this);
     }
 
     public void visit(BlockStatementNode n) {
 
-        System.out.println("BlockStatementNode") ;
-        //println("{") ;
+        System.out.println("BlockStatementNode");
 
-        for (DeclarationNode decl : n.decls)
-            decl.accept(this) ;
-        
-        for (StatementNode stmt : n.stmts)
-            stmt.accept(this) ;
- 
+        n.decls.accept(this);
+        n.stmts.accept(this);
     }
 
-    // public void visit (Declarations n) {
-    //     //These are of the same order so they do not need indentUp/Down
-    //     if (n.decls != null) {
+    public void visit(Declarations n) {
 
-    //         n.decl.accept(this) ;
+        if (n.decls != null) {
 
-    //         n.decls.accept(this) ;
-    //     }
-    // }
+            n.decl.accept(this);
+            n.decls.accept(this);
+        }
+    }
 
     public void visit(DeclarationNode n) {
 
-        System.out.println("DeclarationNode") ;
+        System.out.println("DeclarationNode");
 
-        n.type.accept(this) ;
-        n.id.accept(this) ;
-
+        n.type.accept(this);
+        n.id.accept(this);
     }
 
     public void visit(TypeNode n) {
 
-        System.out.println("TypeNode: " + n.basic) ;
+        System.out.println("TypeNode: " + n.basic);
         
         if(n.array != null) {
-            n.array.accept(this) ;
-        }
-    } 
 
-    public void visit (ArrayTypeNode n) {
-
-        System.out.println("ArrayTypeNode: " + n.size) ;
-
-        if (n.type != null) {
-            n.type.accept(this) ;
+            n.array.accept(this);
         }
     }
 
-    // public void visit(Statements n) {
+    public void visit(ArrayTypeNode n) {
 
-    //     if (n.stmts != null) {
+        System.out.println("ArrayTypeNode: " + n.size);
+        
+        if(n.type != null) {
 
-    //         n.stmt.accept(this) ;
+            n.type.accept(this);
+        }
+    }
 
-    //         n.stmts.accept(this) ;
+    public void visit(Statements n) {
 
-    //     }
-    // }
+        if (n.stmts != null) {
+
+            n.stmt.accept(this);
+            n.stmts.accept(this);
+        }
+    }
 
     public void visit(ParenthesesNode n) {
 
-        System.out.println("ParenthesesNode") ;
+        System.out.println("ParenthesesNode");
 
-        n.expr.accept(this) ;
+        n.expr.accept(this);
     }
 
     public void visit(IfStatementNode n) {
 
-        System.out.println("IfStatementNode") ;
+        System.out.println("IfStatementNode");
 
-        n.cond.accept(this) ;
+        n.cond.accept(this);
+        n.stmt.accept(this);
 
-        n.stmt.accept(this) ;
+        if(n.else_stmt != null) {
 
-        if (n.else_stmt != null) {
+            System.out.println("Else Clause");
 
-            System.out.println("Else Clause") ;
-
-            n.else_stmt.accept(this) ;
+            n.else_stmt.accept(this);
         }
     }
 
-    public void visit (WhileStatementNode n) {
-        loopExist = true ;
-        loopCount++ ;
-        System.out.println("WhileStatementNode") ;
+    public void visit(WhileStatementNode n) {
 
-        n.cond.accept(this) ;
-        n.stmt.accept(this) ;
-        loopCount-- ;
-        if (loopCount == 0) {
-            loopExist = false ;
-        }
+        System.out.println("WhileStatementNode");
+
+        n.cond.accept(this);
+        n.stmt.accept(this);
     }
 
-    public void visit (DoWhileStatementNode n) {
-        loopExist = true ;
-        loopCount++ ;
-        System.out.println("WhileStatementNode") ;
+    public void visit(DoWhileStatementNode n) {
 
-        n.stmt.accept(this) ;
-        n.cond.accept(this) ;
-        loopCount-- ;
-        if (loopCount == 0) {
-            loopExist = false ;
-        }
+        System.out.println("DoWhileStatementNode");
+
+        n.cond.accept(this);
+        n.stmt.accept(this);
     }
 
     public void visit(ArrayAccessNode n) {
-        System.out.println("ArrayAccessNode") ;
 
-        n.id.accept(this) ;
+        System.out.println("ArrayAccessNode");
 
-        n.index.accept(this) ;
+        n.id.accept(this);
+        n.index.accept(this);
     }
 
     public void visit(ArrayDimsNode n) {
 
-        System.out.println("ArrayDimsNode") ;
+        System.out.println("ArrayDimsNode");
 
-        n.size.accept(this) ;
+        n.size.accept(this);
 
-        if (n.dim != null) {
+        if(n.dim != null) {
 
-            n.dim.accept(this) ;
+            n.dim.accept(this);
         }
     }
 
     public void visit(BreakStatementNode n) {
-        if(loopExist)
-            System.out.println("BreakStatementNode") ;
-        else
-            error("Break is outside of a loop.") ;
+
+        System.out.println("BreakStatementNode");
     }
 
-    public void visit (TrueNode n) {
+    public void visit(TrueNode n) {
 
-        System.out.println("TrueNode") ;
+        System.out.println("TrueNode");
     }
-    
+
     public void visit(FalseNode n) {
 
         System.out.println("FalseNode");
@@ -247,128 +199,118 @@ public class TypeChecker extends ASTVisitor {
 
     public void visit(AssignmentNode n) {
 
-        System.out.println("AssignmentNode") ;
+        System.out.println("AssignmentNode");
 
-        n.left.accept(this) ;
-        IdentifierNode leftId ;
-        if (n.left instanceof ArrayAccessNode) { //Judah: This is how to do it! Lets goo!
-            leftId = ((ArrayAccessNode)n.left).id ;
+        n.left.accept(this);
+
+        IdentifierNode leftId = (IdentifierNode)n.left;
+        Type leftType = leftId.type;
+
+        println("In TypeChecker, AssignmentNode's left type: " + leftType);
+
+        Type rightType = null;
+
+        if(n.right instanceof IdentifierNode)
+            ((IdentifierNode)n.right).accept(this);
+        else if(n.right instanceof NumNode) {
+            ((NumNode)n.right).accept(this);
+            rightType = Type.Int;
         }
-        else {
-            leftId = (IdentifierNode)n.left ;
-        }
-        Type leftType = leftId.type ;
-
-        println("In TypeChecker, AssignmentNode's left type: " + leftType) ;
-
-
-        Type rightType = null ;
-
-        if (n.right instanceof IdentifierNode)
-            ((IdentifierNode)n.right).accept(this) ;
-        else if (n.right instanceof NumNode) {
-            ((NumNode)n.right).accept(this) ;
-            rightType = Type.Int ;
-        }
-        else if (n.right instanceof RealNode)
-            ((RealNode)n.right).accept(this) ;
-        else if (n.right instanceof ArrayAccessNode)
-            ((ArrayAccessNode)n.right).accept(this) ;
-        else if (n.right instanceof ParenthesesNode)
+        else if(n.right instanceof RealNode)
+            ((RealNode)n.right).accept(this);
+        else if(n.right instanceof ArrayAccessNode)
+            ((ArrayAccessNode)n.right).accept(this);
+        else if(n.right instanceof ParenthesesNode)
             ((ParenthesesNode)n.right).accept(this);
-        else {//BinExpr ???
-            ((BinExprNode)n.right).accept(this) ;
+        else {
+            ((BinExprNode)n.right).accept(this);
 
-            rightType = ((BinExprNode)n.right).type ;
+            rightType = ((BinExprNode)n.right).type;
         }
 
-        if (leftType == Type.Int)
-            println("********* leftType is Type.Int") ;
-        if (leftType == Type.Float && rightType == Type.Int) {
+        if(leftType == Type.Int)
+            println("********** leftType is Type.Int");
+        
+        if(leftType == Type.Float && rightType == Type.Int) { 
 
-            error("The right-hand side of an assignment is incompatiable to the left-hand size " + ((IdentifierNode)leftId).id) ;
+            error("The right-hand side of an assignment is incomitible to the left-hand side " + leftId.id);
         }
-
     }
 
     public void visit(BinExprNode n) {
 
-        System.out.println("BinExprNode: " + n.op) ; 
+        System.out.println("BinExprNode: " + n.op);
 
-        Type leftType = null ;
-        IdentifierNode leftId = null ;
+        Type leftType = null;
+        IdentifierNode leftId = null;
 
         if(n.left instanceof IdentifierNode) {
-            ((IdentifierNode)n.left).accept(this) ;
+            ((IdentifierNode)n.left).accept(this);
 
-            leftId = (IdentifierNode)n.left ;
-            leftType = leftId.type ;
+            leftId = (IdentifierNode)n.left;
+            leftType = leftId.type;
         }
-        else if (n.left instanceof NumNode)
-            ((NumNode)n.left).accept(this) ;
-        else if (n.left instanceof RealNode)
-            ((RealNode)n.left).accept(this) ;
-        else if (n.left instanceof ArrayAccessNode) 
-            ((ArrayAccessNode)n.left).accept(this) ;
-        else if (n.left instanceof ParenthesesNode)
-            ((ParenthesesNode)n.left).accept(this) ;
+        else if(n.left instanceof NumNode)
+            ((NumNode)n.left).accept(this);
+        else if(n.left instanceof RealNode)
+            ((RealNode)n.left).accept(this);
+        else if(n.left instanceof ArrayAccessNode)
+            ((ArrayAccessNode)n.left).accept(this);
+        else if(n.left instanceof ParenthesesNode)
+            ((ParenthesesNode)n.left).accept(this);
         else
-            ((BinExprNode)n.left).accept(this) ;
+            ((BinExprNode)n.left).accept(this);
         
-        Type rightType = null ;
+        Type rightType = null;
 
-        if (n.right != null) {
-            
-            if (n.right instanceof IdentifierNode) {
-                ((IdentifierNode)n.right).accept(this) ;
-                
-                IdentifierNode rightId = (IdentifierNode)n.right ;
-                rightType = rightId.type ;
+        if(n.right != null) {
+
+            if(n.right instanceof IdentifierNode) {
+                ((IdentifierNode)n.right).accept(this);
+
+                IdentifierNode rightId = (IdentifierNode)n.right;
+                rightType = rightId.type;
             }
-            else if (n.right instanceof NumNode)
-                ((NumNode)n.right).accept(this) ;
-            else if (n.right instanceof RealNode)
-                ((RealNode)n.right).accept(this) ;
-            else if (n.right instanceof ArrayAccessNode)
-                ((ArrayAccessNode)n.right).accept(this) ;
-            else if (n.right instanceof ParenthesesNode)
-                ((ParenthesesNode)n.right).accept(this) ;
-            else
-                ((BinExprNode)n.right).accept(this) ;    
+            else if(n.right instanceof NumNode)
+                ((NumNode)n.right).accept(this);
+            else if(n.right instanceof RealNode)
+                ((RealNode)n.right).accept(this);
+            else if(n.right instanceof ArrayAccessNode)
+                ((ArrayAccessNode)n.right).accept(this);
+            else if(n.right instanceof ParenthesesNode)
+                ((ParenthesesNode)n.right).accept(this);
+            else {
+                ((BinExprNode)n.right).accept(this);
+            }
+
         } else {
 
-            // System.out.println("@@@ n.right == null in BinExprNode: " + n.right) ;
         }
 
-        if (leftType == Type.Float || rightType == Type.Float) {
+        if(leftType == Type.Float || rightType == Type.Float) {
 
-            n.type = Type.Float ;
+            n.type = Type.Float;
         } else {
-            n.type = Type.Int ;
+
+            n.type = Type.Int;
         }
-        
     }
 
     public void visit(IdentifierNode n) {
 
-        // printIndent() ;
+        Type idType = n.type;
+
         System.out.println("IdentifierNode: " + n.id);
-        //print("" + n.id) ;
-        // println(" ;") ;
+        println("****** In TypeChecker, IdentifierNode's type: " + idType);
     }
 
-    public void visit(NumNode n) {
-
-
-        // printIndent() ;
+    public void visit (NumNode n) {      
+          
         System.out.println("NumNode: " + n.value);
-        //print("" + n.value) ;
-        // println(" ;") ;
     }
-
-    public void visit(RealNode n) {
+    
+    public void visit (RealNode n) {
 
         System.out.println("RealNode: " + n.value);
-        //print("" + n.value) ;
     }
 }

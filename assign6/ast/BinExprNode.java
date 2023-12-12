@@ -1,27 +1,34 @@
 package assign6.ast;
 
-import assign6.lexer.Token;
-import assign6.visitor.ASTVisitor;
+import assign6.visitor.*;
+import assign6.lexer.*;
 
-public class BinExprNode extends ExprNode{
+// Example:
+// Checks right side of assignment operator
+// a = 1 ;          1 = literal
+// b = c ;          c = identifier
+// d = e + f ;      e+f = BinExprNode
+// x = y - 2 ;      y-2 = BinExprNode
 
-    public Node left ;
-    public Token op ;
-    public Node right ;
+public class BinExprNode extends ExprNode {
+    
+    public ExprNode left;
+    public ExprNode right;
+    public Token op;
 
     public BinExprNode() {
 
     }
 
-    public BinExprNode (Token op, Node left, Node right) {
+    public BinExprNode(Token op, ExprNode left, ExprNode right) {
 
-        this.op = op ;
-        this.left = left ;
-        this.right = right ;
+        this.op = op;
+        this.left = left;
+        this.right = right;
     }
 
     public void accept(ASTVisitor v) {
 
-        v.visit(this) ;
+        v.visit(this);
     }
 }

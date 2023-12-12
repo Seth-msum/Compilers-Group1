@@ -1,38 +1,32 @@
 package assign6.ast;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import assign6.lexer.*;
 import assign6.visitor.*;
+import assign6.lexer.*;
 
-// Type --> Type [NUM] | basic ;
+///////////////////////////////////////
+//
+// Type --> Type [NUM] | basic;
+//
+///////////////////////////////////////
 
 public class TypeNode extends Node{
-    
-    public Type basic ;                 // basic type (e.g Type.Float)
-    //public ArrayTypeNode array = null ; // By default, array type is null
-    //public IdentifierDescriptors metaData ;
+ 
+    public Type basic;                      //basic type (ie: Type Int)
+    public ArrayTypeNode array = null;      // By default, array type is null
 
-    public List<ArrayTypeNode>      dimensions = new ArrayList<ArrayTypeNode>() ;
-
-    public TypeNode () {
+    public TypeNode() {
 
     }
 
-    // public TypeNode (IdentifierDescriptors metaData) {
+    public TypeNode(Type basic, ArrayTypeNode array) {
 
-    //     this.metaData = metaData ;
-    // }
-
-    public TypeNode (Type basic) {
-
-        this.basic = basic ;
-        //this.array = array ;
+        this.basic = basic;
+        this.array = array;
     }
 
     public void accept(ASTVisitor v) {
 
-        v.visit(this) ;
+        v.visit(this);
+
     }
 }

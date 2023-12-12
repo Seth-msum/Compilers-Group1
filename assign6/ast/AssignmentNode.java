@@ -1,27 +1,27 @@
 package assign6.ast;
 
-import assign6.lexer.*;
 import assign6.visitor.*;
+import assign6.lexer.*;
+ 
+public class AssignmentNode extends StatementNode {
 
-public class AssignmentNode extends StatementNode{
+    public ExprNode left;
+    public Node right;
 
-    public ExprNode left ;
-    //public BinExprNode     right ;
-    public Node         right ; //This if for the bool
-
-    public AssignmentNode () {
+    public AssignmentNode() {
 
     }
 
-    // public AssignmentNode (IdentifierNode id, BinExprNode right ) {
-    public AssignmentNode (ExprNode left, Node right ) {
+    //public AssignmentNode(IdentifierNode left, BinExprNode right) {
+    public AssignmentNode(ExprNode left, Node right) {
 
-        this.left = left ;
-        this.right = right ;
+        this.left = left;
+        this.right = right;
     }
-    
-    public void  accept(ASTVisitor v) {
 
-        v.visit(this) ;
+    public void accept(ASTVisitor v) {
+
+        v.visit(this);
     }
+
 }

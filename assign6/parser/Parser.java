@@ -1,661 +1,615 @@
-package assign6.parser;
+package assign6.parser ;
+
+import assign6.visitor.* ;
+import assign6.lexer.* ;
+import assign6.ast.*;
 
 import java.io.* ;
-//import java.util.ArrayList;
-// import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.List;
 
-import assign6.ast.*;
-import assign6.lexer.*;
-import assign6.visitor.*;
-
-
-// Make sure Word.minus is recognised as a minus.
 public class Parser extends ASTVisitor {
 
-    public CompilationUnit      cu   = null ;
-    public Lexer                lexer       = null ;
-    public Token                look        = null ;
-    public Token                prelook     = null ;
+    public CompilationUnit cu = null ;
+    public Lexer lexer        = null ;       
 
-    // Varaibles related to scoping.
-    public Env                  top = null ;
-    public BlockStatementNode   enclosingBlock = null ;
-    // Example 
-    public          boolean eclosingExample = false ;
+    public Token look = null;
 
-    // Diagnostic tools
-    public          boolean diagnostic = false ;
+    public Env top = null;
 
-    // AST depth variables
-    int             level       = 0 ;
-    String          indent      = "..." ;
+    int level = 0;
+    String indent = "...";
 
-    public Parser (Lexer lexer) {
+    public Parser (Lexer lexer) { 
+
         this.lexer = lexer ;
         cu = new CompilationUnit() ;
-        move() ;
+
+        move();
+
         visit(cu) ;
     }
-
-    public Parser () {
-        cu = new CompilationUnit() ;
-        move() ;
-        visit(cu) ;
-    }
-
-    ////////////////////////////////////////
-    //  Utility methods
-    ////////////////////////////////////////
     
-    void move() {
-        prelook = look ;
-        try { 
-            look = lexer.scan() ; 
-        }
-        catch (IOException e) {
-            System.out.println("IOException") ;
-        }
+    public Parser () {
+
+        cu = new CompilationUnit() ;
+
+        move();
+
+        visit(cu) ;
+    }
+
+    ////////////////////////////////////////
+    //  Utility mothods
+    ////////////////////////////////////////
+
+    void move () {
+
+	    try {
+	    
+	        look = lexer.scan() ;
+	    }
+	    catch(IOException e) {
+	    
+	        System.out.println("IOException") ;
+	    }
     }
 
     void error (String s) {
-        //throw new Error("near line " + lexer.line + ": " + s) ;
-        println("Line " + lexer.line + " " + s ) ;
-        exit(1) ;
-    }
-    void error (String s, String s2) {
-        println(s + " on line "+ lexer.line + ": " + s2) ;
-        exit(1) ;
+
+	    //throw new Error ("near line " + lexer.line + ": " + s) ;
+        println("Line " + lexer.line + ": " + s);
+        exit(1);
     }
 
     void match (int t) {
-        try {
-            if (look.tag == t) {
-                move() ;
-            }
+
+	    try {
+	    
+	        if (look.tag == t)
+		        move() ;
             else if (look.tag == Tag.EOF)
-                error("Syntax error: \";\" or \"}\" expected after " + prelook.toString()) ;
-            else
-                error("Syntax error: \"" + (char)t + "\" expected after " + prelook.toString()) ;
-        }
-        catch (Error e) {
-            System.out.println("Unnown error in match");
-            e.printStackTrace();
-            System.exit(-1) ;
-        }
+                error("Syntax error: \";\" or \"}\" expected");
+	        else
+		        error("Syntax error: \""  + (char)t + "\" expected") ;
+	    }
+	    catch(Error e) {
+	    
+	    }	
     }
 
-    void match (int t, String neatError) {
-        try {
-            if (diagnostic) {
-                println("match test want: " + t + " ") ;
-                println("match test got : " + look.tag + " " + look.toString()) ;
-            }
-            
-            if (look.tag == t) {
-                move() ;
-            }
-            else
-                // error("or line " + (lexer.line-1) + ": " + neatError + "\""+(char)t + "\"") ;
-                error(neatError) ;
-        }
-        catch (Error e) {
-            System.out.println("Unnown error in neat match");
-            System.exit(-1) ;
-        }
-    }
+    void print(String s) {
 
-    void print(String s){
         System.out.print(s);
     }
 
-    void println(String s){
-        System.out.println(s);
-    }
+    void println(String s) {
 
-    void printBlock(String s) {
-        for (int i = 0; i < level; i++) System.out.print(indent) ;
         System.out.println(s);
     }
 
     void exit(int n) {
-        System.exit(n) ;
-    }
 
-    private boolean opt(int... tags) {
-            // its variable length argument like Pythons *args
-        
-        for (int tag : tags)
-            if (look.tag == tag)
-                return true ;
-        return false ;
+        System.exit(n);
     }
 
     ////////////////////////////////////////
     // Visit Methods
     ////////////////////////////////////////
     
-    public void visit(CompilationUnit n) {
-        printBlock("CompilationUnit");
+    public void visit (CompilationUnit n) {
 
-        n.block = new BlockStatementNode(null) ;
+        System.out.println("CompilationUnit");
 
-        level++ ;
-        n.block.accept(this) ;
-        level-- ;
-
-        }
-
-    public void visit (BlockStatementNode n) {
-        /*
-         * This block first matches the '{'(Tag.BST), then 
-         */
-
-        printBlock("BlockStatmentNode");
-
-        match(Tag.BST, "missing '{' before start of statements ") ;
-
-        // scope into new set of variables.
-        n.sTable = top ;
-        top = new Env(top) ; 
-        enclosingBlock = n ;
-
-        level++ ;
-        while (opt(Tag.BASIC)) {
-            DeclarationNode decl = new DeclarationNode() ;
-            n.decls.add(decl) ;
-            decl.accept(this) ;
-        }
-        level-- ;
-
-        level++ ;
-        int check = 0 ;
-        StatementNode tmp ;
-        while (opt(Tag.ID, Tag.IF, Tag.WHILE, Tag.DO, Tag.BREAK, Tag.BST, Tag.BASIC)) {
-            tmp = parseStatementNode(n) ;
-            if (tmp == null) break ;
-            n.stmts.add(tmp) ;
-            check = 1 ;
-        }
-        if (check == 0)
-            error("blockstatement missing a single statement in brackets '{}'.") ;
-        level-- ;
-        if(diagnostic)
-            println(look.toString()) ;
-        match(Tag.BET, "missing closing bracket '}' ") ;
-
-        //scope back out a level of variables.
-        top = n.sTable ;
-        enclosingBlock = n.parent ;
+        n.block = new BlockStatementNode();
+        level ++;
+        n.block.accept(this);
+        level --;
     }
 
-    public void visit(DeclarationNode n) {
-        printBlock("DeclarationNode");
+    public void visit (BlockStatementNode n) {
 
-        n.type = new TypeNode() ;
-        level++ ;
-        n.type.accept(this) ;
-        level-- ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("BlockStatementNode");
+
+        //Debugging
+        //if (look.tag == '{')
+        //    System.out.println("Matched with '{': " + look.tag);
+
+        match('{');
+
+        n.sTable = top;
+        top = new Env(top);
+
+        n.decls = new Declarations();
+        level ++;
+        n.decls.accept(this);
+        level --;
+
+        n.stmts = new Statements();
+        n.stmts.accept(this);
+
+        //Debugging
+        //if (look.tag == '}')
+        //    System.out.println("Matched with '}': " + look.tag);
+
+        match('}');
+
+        top = n.sTable;
+    }
+
+    public void visit (Declarations n) {
+
+        for(int i = 0; i < level; i++) System.out.print(indent);
+        System.out.println("Declarations");
+
+        if (look.tag == Tag.BASIC) {
+
+            n.decl = new DeclarationNode();
+            level ++;
+            n.decl.accept(this);
+            level --;
+
+            n.decls = new Declarations();
+            n.decls.accept(this);
+        }
+    }
+
+    public void visit (DeclarationNode n) {
+
+        for(int i = 0; i < level; i++) System.out.print(indent);
+        System.out.println("DeclarationNode");
+
+        n.type = new TypeNode();
+        level ++;
+        n.type.accept(this);
+        level --;
+
+        n.id = new IdentifierNode();
+        n.id.type = n.type.basic;
+        level ++;
+        n.id.accept(this);
+        level --;
+
+        top.put(n.id.w, n.id);
+
+        IdentifierNode tmp = (IdentifierNode)top.get(n.id.w);
+        println("&&&&&& tmp.type: " + tmp.type);
+        println("&&&&&& tmp.w: " + tmp.w);
         
-        n.id = new IdentifierNode() ;
-        n.id.type = n.type.basic ; //add the type to the character node
-        level++ ;
-        n.id.accept(this) ;
-        level-- ;
-        // The IdentifierNode should also take in the array characteristic.
-
-        // Store in current scope enviroment variables.
-        top.put(n.id.w, n.id) ;
-
-        match(';',"Illegal declaration statement, Needs a semicolon. ") ; //J
+        match(';');
     }
 
     public void visit (TypeNode n) {
-        printBlock("TypeNode: " + look) ;
-        if (look.toString().equals("int"))
-            n.basic = Type.Int ;
-        else if (look.toString().equals("float"))
-            n.basic = Type.Float ;
-        else if (look.toString().equals("bool"))
-            n.basic = Type.Bool ;
-        else if (look.toString().equals("char"))
-            n.basic = Type.Char ;
-        else {
-            error("unnown type or missing type for declaration, please only use supported type");
+
+        for(int i = 0; i < level; i++) System.out.print(indent);
+        System.out.println("TypeNode: " + look);
+
+        if(look.toString().equals("int"))
+            n.basic = Type.Int;
+        else if(look.toString().equals("float"))    
+            n.basic = Type.Float;
+
+        match(Tag.BASIC);
+
+        //If look is"[", this type should be array type
+        if(look.tag == '[') {
+
+            n.array = new ArrayTypeNode();
+            level ++;
+            n.array.accept(this);
+            level --;
         }
-        //custom error for this might not be needed since all basics are accounted for.
-        match(Tag.BASIC) ; //J
+    }
 
-        //If look is "[", this type should be array type
-        level++ ;
-        while(opt('[')) {
-            ArrayTypeNode dim = new ArrayTypeNode() ;
-            n.dimensions.add(dim) ;
-            dim.accept(this) ;
+    public void visit (ArrayTypeNode n) {
+
+        for(int i = 0; i < level; i++) System.out.print(indent);
+        System.out.println("ArrayTypeNode");
+
+        match('[');
+
+        n.size = ((Num)look).value;
+
+        for(int i = 0; i < level; i++) System.out.print(indent);
+        System.out.println("Array Dimension: " + ((Num)look).value);
+
+        match(Tag.NUM);
+
+        match(']');
+
+        if(look.tag == '[') {
+
+            n.type = new ArrayTypeNode();
+            level ++;
+            n.type.accept(this);
+            level --;
         }
-        level-- ;
     }
 
-    public void visit(ArrayTypeNode n) {
-        printBlock("ArrayTypeNode");
-        
-        match('[') ;
+    public void visit (Statements n) {
 
-        if (look.tag != Tag.NUM)
-            error("Declaration of array requires an Integer inside the []") ;
+        if(look.tag != '}' && look.tag != Tag.EOF) {
 
-        n.size = ((Num)look).value ;
-        
-        printBlock("Array Dimentsion: " + ((Num)look).value);
+            level ++;
+            n.stmt = parseStatementNode(n.stmt);
+            level --;
 
-        //println(look.toString());
-        match(Tag.NUM) ;
-        //println(look.toString());
-
-        match(']', "recieved " + look.toString()) ;
-
+            n.stmts = new Statements();
+            level ++;
+            n.stmts.accept(this);
+            level --;
+        }
     }
 
-    // This is depreciated because of updates from lab 10 and 11
-    // public void visit (Statements n) {
+    public StatementNode parseStatementNode(StatementNode stmt) {
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("**** parseStatementNode");
 
-    //     if(look.tag != '}' && look.tag != Tag.EOF) {
+        // Add this line to print the current token
+        System.out.println("Current token: " + look);
 
-    //         level ++;
-    //         n.stmt = parseStatementNode(n.stmt);
-    //         level --;
-
-    //         n.stmts = new Statements();
-    //         level ++;
-    //         n.stmts.accept(this);
-    //         level --;
-    //     }
-    // }
-
-    // This one accepts additional declarations
-    public StatementNode parseStatementNode (BlockStatementNode n) {
-        printBlock("****N parseStatementNode") ;
+        switch(look.tag) {
+            case Tag.ID:
+                stmt = new AssignmentNode();
+                ((AssignmentNode)stmt).accept(this);
+                return stmt;
         
-        StatementNode stmt ;
-            switch (look.tag) {  
-                case Tag.ID:
-                    stmt = new AssignmentNode() ;
-                    ((AssignmentNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.IF:
-                    stmt = new IfStatementNode() ;
-                    ((IfStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.WHILE:
-                    stmt = new WhileStatementNode() ;
-                    ((WhileStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.DO:
-                    stmt = new DoWhileStatementNode() ;
-                    ((DoWhileStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.BREAK:
-                    stmt = new BreakStatementNode() ;
-                    ((BreakStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.BASIC:
-                    while (opt(Tag.BASIC)) {
-                        DeclarationNode decl = new DeclarationNode() ;
-                        n.decls.add(decl) ;
-                        decl.accept(this) ;
-                    }
-                    return parseStatementNode(n) ;
-                case Tag.BST:
-                    stmt = new BlockStatementNode(n) ;
-                    ((BlockStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                    //error("adding declarations after statements are not supported yet") ;
-                default:
-                    //error("Syntax error: Statement needed") ;
-                    System.out.println("returned empty");
-                    return null ;
-            }   
-    }
-
-    // This does not accect declarations. 
-    public StatementNode parseStatementNode () {
-        printBlock("**** parseStatementNode") ;
+            case Tag.IF:
+                stmt = new IfStatementNode();
+                ((IfStatementNode)stmt).accept(this);
+                return stmt;
         
-        StatementNode stmt ;
-            switch (look.tag) {  
-                case Tag.ID:
-                    stmt = new AssignmentNode() ;
-                    ((AssignmentNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.IF:
-                    stmt = new IfStatementNode() ;
-                    ((IfStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.WHILE:
-                    stmt = new WhileStatementNode() ;
-                    ((WhileStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.DO:
-                    stmt = new DoWhileStatementNode() ;
-                    ((DoWhileStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                case Tag.BREAK:
-                    stmt = new BreakStatementNode() ;
-                    ((BreakStatementNode)stmt).accept(this) ;
-                    return stmt ;
-                // case Tag.BASIC:
-                //     error("adding declarations after statements are not supported yet") ;
-                default:
-                    //error("Syntax error: Statement needed") ;
-                    return null ;
-            }   
-    }
+            case Tag.WHILE:
+                stmt = new WhileStatementNode();
+                ((WhileStatementNode)stmt).accept(this);
+                return stmt;
+        
+            case Tag.DO:
+                stmt = new DoWhileStatementNode();
+                ((DoWhileStatementNode)stmt).accept(this);
+                return stmt;
+        
+            case Tag.BREAK:
+                stmt = new BreakStatementNode();
+                ((BreakStatementNode)stmt).accept(this);
+                return stmt;
+        
+            default:
+                // Add this line to print the unrecognized token
+                System.out.println("Unrecognized token: " + look.tag);
+                error("Syntax error: Statement needed");
+                return stmt;
+        }
+    
+}
+
 
     public void visit (ParenthesesNode n) {
-        printBlock("ParenthesesNode");
 
-        match('(') ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("ParenthesesNode");
 
-        if (look.tag == '(') {
-            n.expr = new ParenthesesNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-        } 
-        if (look.tag == Tag.ID) {
-            n.expr = new IdentifierNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-            if (look.tag == '[') {
-                n.expr = parseArrayAccessNode((IdentifierNode)n.expr) ;
+        match('(');
+
+        if(look.tag == '(') {
+
+            n.expr = new ParenthesesNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+
+        } else if(look.tag == Tag.ID) {
+
+            n.expr = new IdentifierNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+
+            if(look.tag == '[') {
+
+                n.expr = parseArrayAccessNode((IdentifierNode)n.expr);
             }
+
+        } else if(look.tag == Tag.NUM) {
+
+            n.expr = new NumNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+
+        } else if(look.tag == Tag.REAL) {
+
+            n.expr = new RealNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+
+        } else if(look.tag == Tag.TRUE) {
+
+            n.expr = new TrueNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+            
+        } else if(look.tag == Tag.FALSE) {
+
+            n.expr = new FalseNode();
+            level ++;
+            n.expr.accept(this);
+            level --;
+            
         }
-        else if (look.tag == Tag.NUM) {
-            n.expr = new NumNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.REAL) {
-            n.expr = new RealNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.TRUE) {
-            n.expr = new TrueNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.FALSE) {
-            n.expr = new FalseNode() ;
-            level++ ;
-            n.expr.accept(this) ;
-            level-- ;
-        }
+
         if (look.tag != ')') {
-            if (!isOperator(look.tag))
-                error("expected a binary operation") ;
-            level++ ;
-            n.expr = parseBinExprNode(n.expr, 0) ;
-            level-- ;
-            System.out.println("**** Root Node operator: " + ((BinExprNode)n.expr).op) ;
+
+            level ++;
+            n.expr = parseBinExprNode(n.expr, 0);
+            level --;
         }
-        match(')') ;
+
+        match(')');
+
     }
 
     public void visit (IfStatementNode n) {
 
-        printBlock("IfStatementNode");
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("IfStatementNode");
 
-        //This came from one of the labs and it explains how to build in code by the parser.
-        if (eclosingExample) {
-            IdentifierNode leftID = new IdentifierNode(new Word("i", Tag.ID), Type.Int) ;
-            AssignmentNode newAssign1 = new AssignmentNode(leftID, new NumNode(new Num(2))) ;
-            AssignmentNode newAssign2 = new AssignmentNode(leftID, new NumNode(new Num(19))) ;
-            AssignmentNode newAssign3 = new AssignmentNode(leftID, new NumNode(new Num(212))) ;
-            enclosingBlock.stmts.add(newAssign1) ;
-            enclosingBlock.stmts.add(newAssign2) ;
-            enclosingBlock.stmts.add(newAssign3) ;
-            AssignmentNode newAssign4 = new AssignmentNode(leftID, new NumNode(new Num(518))) ; 
-            int idx = enclosingBlock.stmts.indexOf(newAssign2) ;
-            enclosingBlock.stmts.add(idx, newAssign4) ;
-            for (StatementNode s : enclosingBlock.stmts)
-                System.out.println(s) ;
-            if (enclosingBlock.stmts.contains(n))
-                System.out.println("********* enclosingBlock has this IfStatementNode") ;
-            else
-                System.out.println("######### enclosingBlock doesn't have this IfStatementNode") ;
-        }   
+        match(Tag.IF);
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("operator: if");
 
-        match(Tag.IF) ;
-        
-        printBlock("operator: if");
+        n.cond = new ParenthesesNode();
+        level ++;
+        n.cond.accept(this);
+        level --;
 
-        n.cond = new ParenthesesNode() ;
-        level++ ;
-        n.cond.accept(this) ;
-        level-- ;
+        if(look.tag == '{') {
 
-        if (look.tag == Tag.BST)  {
-            n.stmt = new BlockStatementNode(enclosingBlock) ;
-            level++ ;
-            n.stmt.accept(this) ;
-            level-- ;
+            n.stmt = new BlockStatementNode();
+
+            level ++;
+            n.stmt.accept(this);
+            level --;
+
         } else {
-            level++ ;
-            n.stmt = parseStatementNode() ;
-            //match(';') ;
-            level-- ;
+
+            n.stmt = parseStatementNode(n.stmt);
         }
 
         if (look.tag == Tag.ELSE) {
+
             match(Tag.ELSE);
-            
-            printBlock("operator: else");
 
-            if (look.tag == Tag.BST) {
-                n.else_stmt = new BlockStatementNode(enclosingBlock) ;
-                level++ ;
-                n.else_stmt.accept(this) ;
-                level-- ;
-            }
-            else {
-                level++ ;
-                n.else_stmt = parseStatementNode() ;
-                level-- ;
+            for(int i=0; i<level; i++) System.out.print(indent);
+            System.out.println("operator: else");
+
+            if(look.tag == '{') {
+
+                n.else_stmt = new BlockStatementNode();
+
+                level ++;
+                n.else_stmt.accept(this);
+                level --;
+
+            } else {
+
+                n.else_stmt = parseStatementNode(n.else_stmt);
             }
         }
+
     }
 
-    public void visit(WhileStatementNode n) {
-        printBlock("WhileStatementNode");
+    public void visit (WhileStatementNode n) {
 
-        match(Tag.WHILE) ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("WhileStatementNode");
 
-        printBlock("operator: while");
-        
-        n.cond = new ParenthesesNode() ;
-        level++ ;
-        n.cond.accept(this) ;
-        level-- ;
+        match(Tag.WHILE);
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("operator: while");
 
-        if (look.tag == Tag.BST) { // {
-            n.stmt = new BlockStatementNode(enclosingBlock) ;
-            level++ ;
-            n.stmt.accept(this) ;
-            level-- ;
+        n.cond = new ParenthesesNode();
+        level ++;
+        n.cond.accept(this);
+        level --;
+
+        if(look.tag == '{') {
+
+            n.stmt = new BlockStatementNode();
+
+            level ++;
+            n.stmt.accept(this);
+            level --;
+
         } else {
-            level++ ;
-            n.stmt = parseStatementNode() ;
-            level-- ;
+
+            n.stmt = parseStatementNode(n.stmt);
         }
     }
 
-    public void visit(DoWhileStatementNode n) {
-        
-        printBlock("DoWhileStatementNode");
+    public void visit (DoWhileStatementNode n) {
+
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("DoWhileStatementNode");
 
         match(Tag.DO);
-        
-        printBlock("operator: do");
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("operator: do");
 
-        if (look.tag == Tag.BST) {
-            n.stmt = new BlockStatementNode(enclosingBlock) ;
-            level++ ;
-            n.stmt.accept(this) ;
-            level-- ;
+        if(look.tag == '{') {
+
+            n.stmt = new BlockStatementNode();
+
+            level ++;
+            n.stmt.accept(this);
+            level --;
+
+        } else {
+
+            n.stmt = parseStatementNode(n.stmt);
         }
-        else {
-            n.stmt = parseStatementNode() ;
-        }
 
-        match(Tag.WHILE) ;
+        match(Tag.WHILE);
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("operator: while");
 
-        printBlock("operator: while");
+        n.cond = new ParenthesesNode();
+        level ++;
+        n.cond.accept(this);
+        level --;
 
-        n.cond = new ParenthesesNode() ;
-        level++ ;
-        n.cond.accept(this) ;
-        level-- ;
-
-        match(';') ;
+        match(';');
     }
 
-    public void visit(ArrayAccessNode n) {
-
-    }
-
-    public void visit(ArrayDimsNode n ) {
-        
-        printBlock("ArrayDimsNode");
-
-        match('[') ;
-
-        ExprNode index = null ;
-        if (look.tag == '(') {
-            index = new ParenthesesNode() ;
-            level++ ;
-            ((ParenthesesNode)index).accept(this) ;
-            level-- ;
-        }
-        else if ( look.tag == Tag.ID) {
-            index = new IdentifierNode() ;
-            level++ ;
-            ((IdentifierNode)index).accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.NUM) {
-            index = new NumNode() ;
-            level++ ;
-            ((NumNode)index).accept(this) ;
-            level-- ;
-        }
-
-        if (look.tag != ']') {
-            if (!isOperator(look.tag))
-                error("expected a binary operation");
-            level++ ;
-            index = parseBinExprNode(index,0) ;
-            level-- ;
-
-            System.out.println("**** Root Node operator: " + ((BinExprNode)index).op) ;
-        }
-
-        match(']') ;
-
-        n.size = index ;
+    public void visit (ArrayAccessNode n) {
 
     }
 
-    ArrayAccessNode parseArrayAccessNode (IdentifierNode id) {
+    public void visit (ArrayDimsNode n) {
 
-        printBlock("parseArrayAccessNode") ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("ArrayDimsNode");
 
-        List<ArrayDimsNode> dimsArray = new ArrayList<ArrayDimsNode>() ;
-        ArrayDimsNode tmp ;
-        while (look.tag == '[') {
-            tmp = new ArrayDimsNode() ;
-            level++ ;
-            tmp.accept(this) ;
-            level-- ;
-            dimsArray.add(tmp) ;
+        match('[');
+
+        ExprNode index = null;
+
+        if(look.tag == '(') {
+
+            index = new ParenthesesNode();
+            level ++;
+            ((ParenthesesNode)index).accept(this);
+            level --;
+        
+        } else if(look.tag == Tag.ID) {
+
+            index = new IdentifierNode();
+            level ++;
+            ((IdentifierNode)index).accept(this);
+            level --;
+        
+        } else if(look.tag == Tag.NUM) {
+
+            index = new NumNode();
+            level ++;
+            ((NumNode)index).accept(this);
+            level --;
+        
+        } 
+
+        if(look.tag != ']') {
+
+            level ++;
+            index = parseBinExprNode(index, 0);
+            level --;
         }
-        //ArrayDimsNode index = new ArrayDimsNode() ;
 
-        return new ArrayAccessNode(id, dimsArray) ;
+        match(']');
+
+        n.size = index;
+
+        if(look.tag == '[') {
+
+            n.dim = new ArrayDimsNode();
+            level ++;
+            n.dim.accept(this);
+            level --;
+        }
     }
 
-    public void visit (AssignmentNode n) { // major changes
-        
-        printBlock("AssignmentNode");
+    ExprNode parseArrayAccessNode(IdentifierNode id) {
 
-        n.left = new IdentifierNode() ;        
-        level++ ;
-        n.left.accept(this) ;
-        level-- ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("parseArrayAccessNode");
 
-        IdentifierNode id =  (IdentifierNode)top.get(((IdentifierNode)n.left).w) ;
+        ExprNode index = new ArrayDimsNode();
+        level ++;
+        index.accept(this);
+        level --;
 
-        if (id == null) error("Declaration error: " + ((IdentifierNode)n.left).w + " was not declared or declared properly") ;
-        if (diagnostic) println("In Parser, AssignmentNode's left type: "+ id.type) ;
-        
-        ((IdentifierNode)n.left).type = id.type ;
+        return new ArrayAccessNode(id, index);
+    }
+
+    public void visit (AssignmentNode n) {
+
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("AssignmentNode");
+
+        n.left = new IdentifierNode();
+
+        level ++;
+        n.left.accept(this);
+        level --;
+
+        IdentifierNode id = (IdentifierNode)top.get(((IdentifierNode)n.left).w);
+        println("In Parser, AssignmentNode's left type: " + id.type);
+
+        ((IdentifierNode)n.left).type = id.type;
 
         if (look.tag == '[') {
 
-            n.left = parseArrayAccessNode((IdentifierNode)n.left) ;
+            n.left = parseArrayAccessNode((IdentifierNode)n.left);
         }
+        
+        match('=');
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("operator: =");
 
-        match('=') ;
+        ExprNode rhs_assign = null;
 
-        printBlock("operator: =");
+        if(look.tag == '(') {
 
-        ExprNode rhs_assign = null ;
-        if (look.tag == '(') {
-            rhs_assign = new ParenthesesNode() ;
-            level++ ;
-            ((ParenthesesNode)rhs_assign).accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.ID) {
-            rhs_assign = new IdentifierNode() ;
-            level++ ;
-            ((IdentifierNode)rhs_assign).accept(this) ;
-            level-- ;
+            rhs_assign = new ParenthesesNode();
+            level ++;
+            ((ParenthesesNode)rhs_assign).accept(this);
+            level --;
+
+        } else if(look.tag == Tag.ID) {
+            
+            rhs_assign = new IdentifierNode();
+            level ++;
+            ((IdentifierNode)rhs_assign).accept(this);
+            level --;
+
             if (look.tag == '[') {
-                rhs_assign = parseArrayAccessNode(((IdentifierNode)rhs_assign)) ;
-            }
-        } 
-        else if (look.tag == Tag.NUM) {
-            rhs_assign = new NumNode() ;
-            level++ ;
-            ((NumNode)rhs_assign).accept(this) ;
-            level-- ;
-        }
-        else if (look.tag == Tag.REAL) {
-            rhs_assign = new RealNode() ;
-            level++ ;
-            ((RealNode)rhs_assign).accept(this) ;
-            level-- ;
+
+                rhs_assign = parseArrayAccessNode(((IdentifierNode)rhs_assign));
+            }  
+
+        } else if(look.tag == Tag.NUM) {
+
+            rhs_assign = new NumNode();
+            level ++;
+            ((NumNode)rhs_assign).accept(this);
+            level --;
+
+        } else if(look.tag == Tag.REAL) {
+
+            rhs_assign = new RealNode();
+            level ++;
+            ((RealNode)rhs_assign).accept(this);
+            level --;
         }
 
-        if (look.tag == ';') {
-            n.right = rhs_assign ;
-        }
-        else if(isOperator(look.tag)){
-            printBlock("operator: " + look);
+        if(look.tag == ';') {   // ex: a = 19 ;
 
-            level++ ;
-            n.right = (BinExprNode) parseBinExprNode( rhs_assign, 0) ;
-            level-- ;
-            System.out.println("**** Root Node operator: " + ((BinExprNode)n.right).op) ;
-        }
-        else {
-            error("expected ';' or a binary operator") ;
+            n.right = rhs_assign;
+
+        } else if(isOperator(look.tag)) {    // ex: b = a + b * c ;
+
+            for(int i=0; i<level; i++) System.out.print(indent);
+            System.out.println("operator: " + look);
+
+            level ++;
+            //Build AST for binary expressions with operator precedence
+            n.right = (BinExprNode) parseBinExprNode (rhs_assign, 0);
+            level --;
+
+            //System.out.println("**** Root Node Operator: " + ((BinExprNode)n.right).op);
+        } else {
+
+            error("Syntax error in AssignmentNode");
         }
 
         match(';');
@@ -665,7 +619,7 @@ public class Parser extends ASTVisitor {
 
         switch(op) {
             case '*': case '/': case '%':
-            case '+': case Tag.MINUS:
+            case '+': case '-':
             case '<': case '>':
             case Tag.LE: case Tag.GE:
             case Tag.EQ: case Tag.NE: return true;
@@ -675,181 +629,249 @@ public class Parser extends ASTVisitor {
         }
     }
 
-    public void visit(BreakStatementNode n) {
-    
-        printBlock("BreakStatementNode: break");
+    public void visit (BreakStatementNode n) {
 
-        match(Tag.BREAK) ;
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("BreakStatementNode: break");
 
-        match(';') ;
+        if(look.tag != Tag.BREAK)
+            error("Syntax error: \"break\" needed");
+
+        match(Tag.BREAK);
+        match(';');
     }
-    
+
     public void visit (TrueNode n) {
-    
-        printBlock("TrueNode");
-        match(Tag.TRUE) ;
+
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("TrueNode");
+
+        if(look.tag != Tag.TRUE)
+            error("Syntax error: \"true\" needed");
+
+        match(Tag.TRUE);
     }
-    
+
     public void visit (FalseNode n) {
+
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("FalseNode");
         
-        printBlock("FalseNode");
-        match(Tag.FALSE) ;
+        if(look.tag != Tag.FALSE)
+            error("Syntax error: \"false\" needed");
+
+        match(Tag.FALSE);
     }
 
-    public void visit(BinExprNode n) {
-        
-        printBlock("BinExprNode");
+    public void visit (BinExprNode n) {
 
-        if (look.tag == '(') {
-            n.left = new ParenthesesNode() ;
-            level++ ;
-            ((ParenthesesNode)n.left).accept(this) ;
-            level-- ;
-        }
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("BinExprNode");
 
-        else if (look.tag == Tag.ID) {
-            n.left = new IdentifierNode() ;
-            level++ ;
-            ((IdentifierNode)n.left).accept(this) ;
-            level-- ;
+        if(look.tag == '(') {
+
+            n.left = new ParenthesesNode();
+            level ++;
+            ((ParenthesesNode)n.left).accept(this);
+            level --;
+
+        } else if(look.tag == Tag.ID) {
+
+            n.left = new IdentifierNode();
+            level ++;
+            ((IdentifierNode)n.left).accept(this);
+            level --;
+
             if (look.tag == '[') {
-                n.left = parseArrayAccessNode((IdentifierNode)n.left) ;
-            }
-        } 
 
-        else if (look.tag == Tag.NUM) {
-            n.left = new NumNode() ;
-            level++ ;
-            ((NumNode)n.left).accept(this) ;
-            level-- ;
+                n.left = parseArrayAccessNode((IdentifierNode)n.left);
+            }
+            
+        } else if(look.tag == Tag.NUM) {
+
+            n.left = new NumNode();
+            level ++;
+            ((NumNode)n.left).accept(this);
+            level --;
+            
+        } else if(look.tag == Tag.REAL) {
+
+            n.left = new RealNode();
+            level ++;
+            ((RealNode)n.left).accept(this);
+            level --;
+            
         }
 
-        // if (diagnostic) {
-            System.out.println("&&&&&& operator: " + look) ;
-            System.out.println("&&&&&& n.left: " + n.left) ;
-        // }
+        for(int i=0; i<level; i++) System.out.print(indent);
+        System.out.println("&&&&&& operator: " + look);
+        System.out.println("&&&&&& n.left: " + n.left);
 
-        if (!isOperator(look.tag))
-            error("expected a binary operation");
-        level++ ;
-        BinExprNode binary = (BinExprNode) parseBinExprNode((ExprNode)n.left, 0) ;
-        n.op = binary.op ;
-        n.right = binary.right ;
-        level -- ;
-        System.out.println("**** Root Node operator: " + ((BinExprNode)n.right).op) ;
+        level ++;
+        BinExprNode binary = (BinExprNode) parseBinExprNode(n.left, 0);
+        n.op = binary.op;
+        n.right = binary.right;
+        level --;
+
     }
+    
+    
 
     /*
-        < Operator Precedence >
-        Operators are listed top to bottom in ascending precedence.
+      < Operator Precedence >
 
-        01. assignment =, +=, -=, *=, /=, %=, &=, ^=, \=, <<=, >>=, >>>=
-        02. tenary ? :
-        03. logical OR ||
-        04. logical AND &&
-        05. bitwise inclusive OR |
-        06. bitwise exclusive OR ^
-        07. bitwise AND &
-        08. equality ==, !=
-        09. relational <, >, <=, >=
-        10. shift <<, >>, >>>
-        11. additive +, -
-        12. multiplicative *, /, %
-        13. unary ++expr, --expr, +expr, -expr
-        14. postfix expr++, expr--
+      Operators are listed top to bottom in ascending precedence.
+
+      01. assignment: =, +=, -=, *=, /=, %=, &=, ^=, \=, <<=, >>=, >>>=
+      02. tenary: ? :
+      03. logical: OR ||
+      04. logical: AND &&
+      05. bitwise inclusive: OR |
+      06. bitwise exclusive: OR ^
+      07. bitwise: AND &
+      08. equality: ==, !=
+      09. relational: <, >, <=, >=
+      10. shift: <<, >>, >>>
+      11. additive: +, -
+      12. multiplicative: *, /, %
+      13. unary: ++expr, --expr, +expr, -expr
+      14. postfix: expr++, expr--
      */
-    int getPrecedence (int op) {
-        switch ( op ) {
-            case '*':           
-            case '/':
-            case '%':
-                return 12 ;     //multiplicative
-            case '+':
-            case Tag.MINUS:
-                return 11 ;     //additive
-            case '<':
-            case '>':
-            case Tag.LE:
-            case Tag.GE:
-                  return 9 ;  //relational
-            case Tag.EQ:
-            case Tag.NE:
-                  return 8 ;  //equality
-            case ';':
-                return -1 ;
+
+    int getPrecedence(int op) {
+
+        switch(op) {
+
+            case '*': case '/': case '%': return 12; // multiplicative
+            case '+': case '-':           return 11; // additive
+            case '<': case '>':           return 9; // relational
+            case Tag.LE: case Tag.GE:     return 9; // relational
+            case Tag.EQ: case Tag.NE:     return 8; // equality
+
             default:
-                return -2 ; // This is a test on my end: Judah
+            return -1; // ';'
         }
     }
 
-    ExprNode parseBinExprNode( ExprNode lhs, int precedence) {
-        //printBlock("parseBinExprNode");
-        while ( getPrecedence(look.tag) >= precedence) {
-            Token token_op = look ;
-            int op = getPrecedence(look.tag) ;
-            move() ;
-            for (int i = 0; i < level; i++) System.out.print(indent) ;
-            ExprNode rhs = null ;
-            if (look.tag == '(') {
-                rhs = new ParenthesesNode() ;
-                level++ ;
-                ((ParenthesesNode)rhs).accept(this) ;
-                level-- ;
-            }else if (look.tag == Tag.ID) {
-                rhs = new IdentifierNode() ;
-                level++ ;
-                ((IdentifierNode)rhs).accept(this) ;
-                level-- ;
-                if (look.tag == '[') {
-                    rhs = parseArrayAccessNode(((IdentifierNode)rhs)) ;
+    ExprNode parseBinExprNode(ExprNode lhs, int precedence) {
+
+        // If the current op's precedence is higher than that of
+        // the previous, then keep traveling down to create a new
+        // BinExprNode for binary expressions with higher precedence
+        // Otherwise, create a new BinExprNode for current lhs and rhs.
+        while(getPrecedence(look.tag) >= precedence) {
+
+            Token token_op = look;
+            int op = getPrecedence(look.tag);
+
+            move();
+
+            for(int i=0; i<level;  i++) System.out.print(indent);
+       
+            //Debugging
+            //if (look.tag == Tag.NUM)
+            //    System.out.println("&&&& NumNode");
+            //else if (look.tag == Tag.ID)
+            //    System.out.println("**** IdentifierNode");
+
+            ExprNode rhs = null;
+
+            if(look.tag == '(') {
+
+                rhs = new ParenthesesNode();
+                level ++;
+                ((ParenthesesNode)rhs).accept(this);
+                level --;
+
+            } else if(look.tag == Tag.ID) {
+
+                rhs = new IdentifierNode();
+                level ++;
+                ((IdentifierNode)rhs).accept(this);
+                level --;
+
+                if(look.tag == '[') {
+
+                    rhs = parseArrayAccessNode(((IdentifierNode)rhs));
                 }
+
+            } else if(look.tag == Tag.NUM) {
+
+                rhs = new NumNode();
+                level ++;
+                ((NumNode)rhs).accept(this);
+                level --;
+
+            } else if(look.tag == Tag.REAL) {
+
+                rhs = new RealNode();
+                level ++;
+                ((RealNode)rhs).accept(this);
+                level --;
             }
-            else if (look.tag == Tag.NUM) {
-                rhs = new NumNode() ;
-                level++ ;
-                ((NumNode)rhs).accept(this) ;
-                level-- ;
+
+            //System.out.println("op = " + op);
+            //System.out.println("token_op = " + token_op);
+            //System.out.println("next_op = " + getPrecedence(look.tag));
+
+            // Whenever the next op's precedence is higher than that
+            // of the current operator, keep recursively calling itself
+            while (getPrecedence(look.tag) > op) {
+
+                rhs = parseBinExprNode(rhs, getPrecedence(look.tag));
             }
-            else if (look.tag == Tag.REAL) {
-                rhs = new RealNode() ;
-                level++ ;
-                ((RealNode)rhs).accept(this) ;
-                level-- ;
-            }
-            while ( getPrecedence(look.tag) > op ) {
-                rhs = parseBinExprNode( rhs, getPrecedence(look.tag) ) ;
-            }
+
             lhs = new BinExprNode(token_op, lhs, rhs);
-        } 
-        return lhs ;
+
+            //System.out.println("**** Created BinExprNode with op " + token_op)
+        }
+
+        return lhs;
     }
 
-    public void visit(NumNode n) {
-        n.value = ((Num)look).value ;
-        if (look.tag != Tag.NUM)
-            error("Syntax error: Integer number needed, instead of " + n.value) ;
-        match(Tag.NUM) ;
-        for (int i = 0; i < level; i++ ) System.out.print(indent) ;
-        n.printNode() ;
+    public void visit (NumNode n) {
+
+        n.value = ((Num)look).value;
+
+        if(look.tag != Tag.NUM)
+            error("Syntax error: Integer number needed, instead of " + n.value);
+
+        match(Tag.NUM);     //expect look.tag == Tag.NUM
+
+        for (int i=0; i<level; i++) System.out.print(indent);
+        n.printNode();
+        //System.out.println("look in IdentifierNode: " + look);
     }
 
-    public void visit(RealNode n) {
-        n.value = ((Real)look).value ;
-        if (look.tag != Tag.REAL)
-            error("Syntax error: Real number needed, instead of " + n.value) ;
-        match(Tag.REAL) ;
-        for (int i = 0; i < level; i++ ) System.out.print(indent) ;
-        n.printNode() ;
+    public void visit (RealNode n) {
+
+        n.value = ((Real)look).value;
+
+        if(look.tag != Tag.REAL)
+            error("Syntax error: Real number needed, instead of " + n.value);
+
+        match(Tag.REAL);     //expect look.tag == Tag.REAL
+
+        for (int i=0; i<level; i++) System.out.print(indent);
+        n.printNode();
+        //System.out.println("look in IdentifierNode: " + look);
     }
 
-    public void visit(IdentifierNode n) {
-        n.id = look.toString() ;
-        n.w = (Word)look ;
-        //println("****** n.type: " + n.type) ;
-        if (look.tag != Tag.ID)
-            error("Syntax error: Identifier or variable needed, instead of " + n.id) ;
-        match(Tag.ID) ;
-        for (int i = 0; i < level; i++ ) System.out.print(indent) ;
-        n.printNode() ;
-    }  
+    public void visit (IdentifierNode n) {
+
+        n.id = look.toString();
+        n.w = (Word)look;
+        println("***** n.type: " + n.type);
+
+        if(look.tag != Tag.ID)
+            error("Syntax error: Identifier or variable needed, instead of " + n.id);
+
+        match(Tag.ID);      //expect look.tag == Tag.ID
+
+        for (int i=0; i<level; i++) System.out.print(indent);
+        n.printNode();
+        //System.out.println("IdentifierNode: " + n.id);
+        //System.out.println("look in IndentifierNode: " + look);
+    }
+
 }

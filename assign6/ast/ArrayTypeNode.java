@@ -1,34 +1,31 @@
 package assign6.ast;
 
-
-import java.util.*;
-
 import assign6.visitor.*;
+import assign6.lexer.*;
+
+//////////////////////////////////////////
+//
+// Type --> Type[NUM] | basic;
+//
+//////////////////////////////////////////
 
 public class ArrayTypeNode extends TypeNode {
-
-    //public TypeNode type ;
-    public int size = 1 ;
-    // public IdentifierDescriptors metaData ;
     
+    public TypeNode type;   //array of type
+    public int size = 1;    //number of elements
 
     public ArrayTypeNode () {
 
     }
 
-    // public ArrayTypeNode (IdentifierDescriptors metaData) {
-    //     this.metaData = metaData ;
-    // }
+    public ArrayTypeNode(int size, TypeNode type) {
 
-    public ArrayTypeNode (int size, TypeNode type) {
-        
-        this.size = size ;
-        //this.type = type ;
+        this.size = size;
+        this.type = type;
     }
 
     public void accept(ASTVisitor v) {
 
-        v.visit(this) ;
+        v.visit(this);
     }
-    
 }
